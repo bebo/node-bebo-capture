@@ -24,8 +24,6 @@ BeboCapture.getDesktop()
 
 ### Capture Desktop
 ```JavaScript
-const BeboCapture = require('bebo-capture');
-
 let options = {
   id: "desktop:0",
   type: "desktop"
@@ -37,8 +35,6 @@ BeboCapture.setCapture(options)
 
 ### Capture Game (inject)
 ```JavaScript
-const BeboCapture = require('bebo-capture');
-
 let options = {
   type: "inject",
   "CaptureWindowClassName": "TankWindow",
@@ -50,6 +46,20 @@ BeboCapture.setCapture(options)
   .then(() => console.log("capturing Overwatch"));
 ```
 
+## BeboCapture.getCapture()
+
+What does Bebo Capture API think it is doing?
+
+```JavaScript
+BeboCapture.getCapture()
+  .then(currentSettings => console.log(currentSettings));
+// outputs e.g. for desktop
+{
+   id: "desktop:0",
+   label: "Screen 0",
+   type: "desktop"
+}
+```
 
 
 
