@@ -37,9 +37,9 @@ BeboCapture.setCapture(options)
 ```JavaScript
 let options = {
   type: "inject",
-  "CaptureWindowClassName": "TankWindow",
-  "CaptureWindowName": "",
-  "CaptureAntiCheat": 0
+  CaptureWindowClassName: "TankWindow",
+  CaptureWindowName: "",
+  CaptureAntiCheat: 0
 };
 
 BeboCapture.setCapture(options)
