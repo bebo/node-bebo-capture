@@ -2,11 +2,11 @@
 native module for node to control bebo-capture DLL
 
 
-## BeboCapture.getDesktop()
+## BeboCapture.getDesktops()
 ```JavaScript
 const BeboCapture = require('bebo-capture');
 
-BeboCapture.getDesktop()
+BeboCapture.getDesktops()
   .then(deviceList => console.log(deviceList));
 // outputs:
 [{
