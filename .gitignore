@@ -1,3 +1,7 @@
+# native modules
+node_modules
+build/
+
 # Prerequisites
 *.d
 

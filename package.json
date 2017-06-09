@@ -1,0 +1,35 @@
+{
+  "main": "index.js",
+  "scripts": {
+    "configure": "node-gyp configure",
+    "build": "node-gyp build",
+    "test": "mocha",
+    "install": "node-gyp rebuild"
+  },
+  "devDependencies": {
+    "bindings": "^1.2.1",
+    "mocha": "^2.2.5",
+    "nan": "^2.0.5",
+    "node-gyp": "^1.0.3"
+  },
+  "dependencies": {
+    "bindings": "^1.2.1",
+    "bluebird": "^3.5.0"
+  },
+  "gypfile": true,
+  "name": "node-bebo-capture",
+  "description": "native module for node to control bebo-capture DLL",
+  "version": "1.0.0",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bebo/node-bebo-capture.git"
+  },
+  "author": "Florian P. Nierhaus",
+  "bugs": {
+    "url": "https://github.com/bebo/node-bebo-capture/issues"
+  },
+  "homepage": "https://github.com/bebo/node-bebo-capture#readme"
+}
