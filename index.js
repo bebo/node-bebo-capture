@@ -21,8 +21,13 @@ BeboCapture.getDesktops = () => {
     });
 }
 
+var setCapture = Promise.promisify(Native.setCapture);
 BeboCapture.setCapture = (options) => {
-    return Promise.resolve();
+    console.log("setCapture called", options);
+    if (!typeof(options) === 'object') {
+        return Promise.reject("invalid object");
+    }
+    return setCapture(options.type || "", options.id || "", options.label || "", options.windowName || "", options.windowClassName || "", options.antiCheat || false);
 }
 
 module.exports = BeboCapture;

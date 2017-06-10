@@ -19,4 +19,23 @@ describe('bebo capture extension', function() {
         assert(data[0].label === 'Screen 1', "capture id should be desktop:0");
     });
   });
+  it('setCapture should set the current settings', function () {
+      let testValues = {
+          id: "test_id",
+          type: "inject",
+          CaptureWindowClassName: "TankWindow",
+          CaptureWindowName: "",
+          CaptureAntiCheat: true 
+      };
+
+    return BeboCapture.setCapture(testValues)
+      .then(function () {
+        return BeboCapture.getCapture()
+          .then(function (data) {
+            console.log('data', data);
+            assert(data != null, "capture settings should exist");
+            assert(data.type == testValues.type, "capture type should exist");
+        });
+    });
+  });
 });

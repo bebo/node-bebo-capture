@@ -4,5 +4,6 @@
 #include <nan.h>
 
 NAN_METHOD(getCapture);
+NAN_METHOD(setCapture);
 
 #endif
