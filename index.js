@@ -2,7 +2,7 @@ var Native = require('bindings')('BeboCaptureNative');
 const util = require('util');
 var promisify = util.promisify;
 
-if (promisify) {
+if (promisify == null) {
   let Promise = require('bluebird');
   promisify = Promise.promisify;
 }
