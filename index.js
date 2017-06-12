@@ -1,9 +1,16 @@
 var Native = require('bindings')('BeboCaptureNative');
-var Promise = require('bluebird');
+const util = require('util');
+var promisify = util.promisify;
+
+if (promisify) {
+  let Promise = require('bluebird');
+  promisify = Promise.promisify;
+}
 
 var BeboCapture = {
 };
-BeboCapture.getCapture = Promise.promisify(Native.getCapture);
+
+BeboCapture.getCapture = promisify(Native.getCapture);
 
 BeboCapture.getDesktops = () => {
     // TODO FAKE FOR NOW
@@ -21,11 +28,11 @@ BeboCapture.getDesktops = () => {
     });
 }
 
-var setCapture = Promise.promisify(Native.setCapture);
+var setCapture = promisify(Native.setCapture);
 BeboCapture.setCapture = (options) => {
     console.log("setCapture called", options);
     if (!typeof(options) === 'object') {
-        return Promise.reject("invalid object");
+        return new Promise((_, reject) => { reject("invalid object") });
     }
     return setCapture(options.type || "", options.id || "", options.label || "", options.windowName || "", options.windowClassName || "", options.antiCheat || false);
 }

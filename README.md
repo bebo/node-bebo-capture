@@ -30,16 +30,16 @@ let options = {
 };
 
 BeboCapture.setCapture(options)
-  .then(() => console.log("capturing screen 0"));
+  .then((capture) => console.log("capturing screen 0", capture));
 ```
 
 ### Capture Game (inject)
 ```JavaScript
 let options = {
   type: "inject",
-  CaptureWindowClassName: "TankWindow",
-  CaptureWindowName: "",
-  CaptureAntiCheat: 0
+  captureWindowClassName: "TankWindow",
+  captureWindowName: "",
+  captureAntiCheat: false
 };
 
 BeboCapture.setCapture(options)

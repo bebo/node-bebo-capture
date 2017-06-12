@@ -80,7 +80,7 @@ HRESULT RegGetBeboSZ(char * szValueName, char * data, LPDWORD datasize) {
 	RegCloseKey(hKey);
 
 	if (lstatus != ERROR_SUCCESS) {
-		std::cout << "error reading key " << lstatus << std::endl;
+		std::cout << "error reading key " << szValueName << ":" << lstatus << std::endl;
 		return HRESULT_FROM_WIN32(lstatus);
 	}
 	else if (dwType != REG_SZ) {
@@ -167,6 +167,10 @@ public:
 	// here, so everything we need for input and output
 	// should go on `this`.
 	void Execute() {
+		readData();
+	}
+
+	void readData() {
 
 		capture = new CaptureEntity();
 		capture->id = getSZ("CaptureId");
@@ -176,7 +180,7 @@ public:
 		}
 		capture->label = getSZ("CaptureLabel");
 		capture->windowClassName = getSZ("CaptureWindowClassName");
-		capture->windowName = getSZ("CaptureWindowNameName");
+		capture->windowName = getSZ("CaptureWindowName");
 		//capture->label = getSZ("CaptureAntiCheat"); // TODO boolean
 
 	}
@@ -213,14 +217,16 @@ public:
 		callback->Call(2, argv);
 	}
 
-private:
+protected:
 	CaptureEntity *capture;
 };
 
-class SetCaptureWorker: public AsyncWorker {
+class SetCaptureWorker: public GetCaptureWorker {
 public:
 	SetCaptureWorker(CaptureEntity *capture, Callback *callback)
-		: AsyncWorker(callback), capture(capture) {};
+		: GetCaptureWorker(callback)  {
+		this->capture = capture;
+	};
 	~SetCaptureWorker() {
 		if (capture) {
 			delete capture;
@@ -237,29 +243,12 @@ public:
 		putSZ("CaptureType", capture->type);
 		putSZ("CaptureId", capture->id);
 		putSZ("CaptureLabel", capture->label);
-		putSZ("CaptureWindowClassName", capture->windowClassName);
 		putSZ("CaptureWindowName", capture->windowName);
-
+		putSZ("CaptureWindowClassName", capture->windowClassName);
 		//capture->label = getSZ("CaptureAntiCheat"); // TODO boolean
-
+		readData();
 	}
 
-	// Executed when the async work is complete
-	// this function will be run inside the main event loop
-	// so it is safe to use V8 again
-	void HandleOKCallback() {
-		HandleScope scope;
-/*
-		Local<Value> argv[] = {
-			Null()
-		};
-		*/
-
-		callback->Call(0, 0);
-	}
-
-private:
-	CaptureEntity *capture;
 };
 
 NAN_METHOD(getCapture) {
