@@ -8,9 +8,9 @@
   },
   "devDependencies": {
     "bindings": "^1.2.1",
-    "mocha": "^2.2.5",
+    "mocha": "^3.4.2",
     "nan": "^2.0.5",
-    "node-gyp": "^1.0.3"
+    "node-gyp": "^3.6.2"
   },
   "dependencies": {
     "bindings": "^1.2.1",
