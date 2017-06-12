@@ -17,7 +17,7 @@
     "bluebird": "^3.5.0"
   },
   "gypfile": true,
-  "name": "node-bebo-capture",
+  "name": "bebo-capture",
   "description": "native module for node to control bebo-capture DLL",
   "version": "1.0.0",
   "directories": {
