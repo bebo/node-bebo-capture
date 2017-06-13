@@ -32,7 +32,7 @@ describe('bebo capture extension', function() {
       type: "inject",
       windowClassName: "TankWindow",
       windowName: "",
-      //  antiCheat: true 
+      antiCheat: true 
     };
     let expected = Object.assign({label: ""}, testValues);
     return BeboCapture.setCapture(testValues)
@@ -63,7 +63,7 @@ describe('bebo capture extension', function() {
           type: "inject",
           windowClassName: "TankWindow",
           windowName: "",
-        //  antiCheat: true 
+          antiCheat: false 
       };
 
       let expected = Object.assign({label: ""}, testValues);

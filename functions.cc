@@ -76,7 +76,6 @@ HRESULT RegGetBeboSZ(HKEY hkey, char * szValueName, char * data, LPDWORD datasiz
 
 	LSTATUS lstatus = 0;
 	WCHAR valueName[1024] = { 0 };
-	BYTE bytes[1024] = { 0 };
 	if (!MultiByteToWideChar(CP_UTF8, 0, szValueName, strlen(szValueName), valueName, 1024)) {
 		return E_INVALIDARG;
 	}
@@ -123,6 +122,43 @@ char * getSZ(HKEY hkey, char * key) {
 		return NULL;
 	}
 }
+
+HRESULT RegGetDWord(HKEY hKey, char * szValueName, DWORD * lpdwResult) {
+
+	// Given a value name and an hKey returns a DWORD from the registry.
+	// eg. RegGetDWord(hKey, TEXT("my dword"), &dwMyValue);
+
+	LONG lResult;
+	DWORD dwDataSize = sizeof(DWORD);
+	DWORD dwType = REG_DWORD;
+	WCHAR valueName[1024] = { 0 };
+
+	if (!MultiByteToWideChar(CP_UTF8, 0, szValueName, strlen(szValueName), valueName, 1024)) {
+		return E_INVALIDARG;
+	}
+
+	// Check input parameters...
+	if (hKey == NULL || lpdwResult == NULL) return E_INVALIDARG;
+
+	// Get dword value from the registry...
+	lResult = RegQueryValueExW(hKey, valueName, 0, &dwType, (LPBYTE) lpdwResult, &dwDataSize );
+
+	// Check result and make sure the registry value is a DWORD(REG_DWORD)...
+	if (lResult != ERROR_SUCCESS) return HRESULT_FROM_WIN32(lResult);
+	else if (dwType != REG_DWORD) return DISP_E_TYPEMISMATCH;
+
+	return NOERROR;
+}
+
+HRESULT getBool(HKEY hkey, char * key, bool * val) {
+	DWORD value = 0;
+	HRESULT status = RegGetDWord(hkey, key, &value);
+	if (status == NOERROR) {
+		*val = value == 1;
+	}
+	return status;
+}
+
 HRESULT putSZ(HKEY hkey, char * key, char * value) {
 	if (value == NULL) {
 		value = "";
@@ -150,6 +186,27 @@ HRESULT putSZ(HKEY hkey, char * key, char * value) {
 	DWORD dwType = REG_SZ;
 
 	lstatus = RegSetValueExW(hkey, valueName, 0, dwType, (LPBYTE) wdata, wSize);
+
+	if (lstatus != ERROR_SUCCESS) {
+        std::cout << "error writing key " << lstatus << std::endl;
+		return HRESULT_FROM_WIN32(lstatus);
+	} 
+
+	return NOERROR;
+}
+
+HRESULT putBool(HKEY hkey, char * key, bool val) {
+	WCHAR valueName[1024] = { 0 };
+	LSTATUS lstatus = 0;
+	if (!MultiByteToWideChar(CP_UTF8, 0, key, strlen(key), valueName, 1024)) {
+	  return E_INVALIDARG;
+	}
+
+	DWORD value = val;
+
+	DWORD dwType = REG_DWORD;
+
+	lstatus = RegSetValueExW(hkey, valueName, 0, dwType, (LPBYTE) &value, sizeof(value));
 
 	if (lstatus != ERROR_SUCCESS) {
         std::cout << "error writing key " << lstatus << std::endl;
@@ -191,7 +248,12 @@ public:
 		capture->label = getSZ(hkey, "CaptureLabel");
 		capture->windowClassName = getSZ(hkey, "CaptureWindowClassName");
 		capture->windowName = getSZ(hkey, "CaptureWindowName");
+        getBool(hkey, "CaptureAntiCheat", &capture->antiCheat);
 		//capture->label = getSZ("CaptureAntiCheat"); // TODO boolean
+	}
+
+	void HandleErrorCallback() {
+		printf("error occured\n");
 	}
 
 	// Executed when the async work is complete
@@ -216,7 +278,8 @@ public:
 		if (capture->windowClassName) {
 			Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
 		}
-		//TODO boolean antiCheat
+
+		Set(obj, New("antiCheat").ToLocalChecked(), New(capture->antiCheat));
 
 		Local<Value> argv[] = {
 			Null()
@@ -254,46 +317,13 @@ public:
 		putSZ(hkey, "CaptureLabel", capture->label);
 		putSZ(hkey, "CaptureWindowName", capture->windowName);
 		putSZ(hkey, "CaptureWindowClassName", capture->windowClassName);
-		//capture->label = getSZ("CaptureAntiCheat"); // TODO boolean
+		putBool(hkey, "CaptureAntiCheat", capture->antiCheat);
 		delete(capture);
 		readData(hkey);
 		RegClose(hkey);
 	}
 
-	void HandleErrorCallback() {
-		printf("error occured\n");
-	}
 
-	void HandleOKCallback() {
-
-		HandleScope scope;
-
-		Local<Object> obj = Nan::New<Object>();
-		if (capture->id) {
-          Set(obj, New("id").ToLocalChecked(), New(capture->id).ToLocalChecked());
-		}
-		if (capture->label) {
-  		  Set(obj, New("label").ToLocalChecked(),New(capture->label).ToLocalChecked());
-		}
-		if (capture->type) {
-			Set(obj, New("type").ToLocalChecked(), New(capture->type).ToLocalChecked());
-		}
-		if (capture->windowName) {
-			Set(obj, New("windowName").ToLocalChecked(), New(capture->windowName).ToLocalChecked());
-		}
-		if (capture->windowClassName) {
-			Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
-		}
-		//TODO boolean antiCheat
-
-		Local<Value> argv[] = {
-			Null()
-			, obj
-		};
-		std::cout << "done with HandleOKCallback()" << std::endl;
-
-		callback->Call(2, argv);
-	}
 };
 
 NAN_METHOD(getCapture) {
@@ -320,12 +350,10 @@ NAN_METHOD(setCapture) {
 	capture->label = cpStringArg(info, 2);
 	capture->windowName = cpStringArg(info, 3);
 	capture->windowClassName = cpStringArg(info, 4);
-	/*
 	Nan::Maybe<bool> antiCheat = Nan::To<bool>(info[5]);
 	if (!info[5].IsEmpty()) {
 		capture->antiCheat = antiCheat.ToChecked();
 	}
-	*/
 
 	Callback *callback = new Callback(info[6].As<Function>());
 	AsyncQueueWorker(new SetCaptureWorker(capture, callback));
