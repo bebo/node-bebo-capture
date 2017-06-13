@@ -8,23 +8,10 @@ describe('bebo capture extension', function() {
         console.log('data', data);
         assert(data != null, "capture settings should exist");
         assert(data.type != null, "capture type should exist");
-    });
-  });
-  it('getCapture B should return the current settings', function () {
-    return BeboCapture.getCapture()
-      .then(function (data) {
-        console.log('data', data);
-        assert(data != null, "capture settings should exist");
-        assert(data.type != null, "capture type should exist");
-    });
-  });
-  it('getCapture C should return the current settings', function () {
-    return BeboCapture.getCapture()
-      .then(function (data) {
-        console.log('data', data);
-        assert(data != null, "capture settings should exist");
-        assert(data.type != null, "capture type should exist");
-    });
+      }).catch(function(err) {
+        console.log(err);
+        throw err;
+      });
   });
   it('setCaptureVerify ', function () {
     let testValues = {
@@ -48,14 +35,6 @@ describe('bebo capture extension', function() {
         assert.deepEqual(verifyData, expected);
         console.log("OOOKKK");
       });
-  });
-  it('getCapture should return the current settings', function () {
-    return BeboCapture.getCapture()
-      .then(function (data) {
-        console.log('data', data);
-        assert(data != null, "capture settings should exist");
-        assert(data.type != null, "capture type should exist");
-    });
   });
   it('setCapture should set the current settings', function () {
       let testValues = {

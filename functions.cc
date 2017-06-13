@@ -1,6 +1,7 @@
 #include "functions.h"
 #include <windows.h>
 #include <iostream>
+#include <string.h>
 
 using Nan::Callback;
 using v8::Function;
@@ -20,32 +21,16 @@ using Nan::To;
 class CaptureEntity {
 
 public:
-	char * id = NULL;
-	char * label = NULL;
-	char * type = NULL;
-	char * windowClassName = NULL;
-	char * windowName = NULL;
+	std::string id;
+	std::string label;
+    std::string type;
+	std::string windowClassName ;
+	std::string windowName;
 	bool antiCheat = 0;
 
-	CaptureEntity() : id(NULL), label(NULL), type(NULL), windowClassName(NULL), windowName(NULL), antiCheat(0) {};
+	CaptureEntity() {};
 
 	~CaptureEntity() {
-
-		if (id != NULL) {
-			delete id;
-		}
-		if (label != NULL) {
-			delete label;
-		}
-		if (type != NULL) {
-			delete type;
-		}
-		if (windowName != NULL) {
-			delete windowName;
-		}
-		if (windowClassName != NULL) {
-			delete windowClassName;
-		}
 	}
 };
 
@@ -55,18 +40,15 @@ HRESULT RegOpen(REGSAM samDesired, HKEY * hkey) {
 	lstatus = RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Bebo\\GameCapture", 0, samDesired, hkey);
 
 	if (lstatus != ERROR_SUCCESS) {
-		std::cout << "can't open registry: " << lstatus << std::endl;
-		return E_INVALIDARG;
+		return HRESULT_FROM_WIN32(lstatus);
 	}
 
-	std::cout << "opened registry successfully: " << lstatus << std::endl;
 	return NOERROR;
 }
 
 HRESULT RegClose(HKEY hkey) {
 	LSTATUS lstatus = RegCloseKey(hkey);
 	if (lstatus != ERROR_SUCCESS) {
-		std::cout << "can't close registry: " << lstatus << std::endl;
 		return E_INVALIDARG;
 	}
 	return NOERROR;
@@ -84,7 +66,6 @@ HRESULT RegGetBeboSZ(HKEY hkey, char * szValueName, char * data, LPDWORD datasiz
 		return E_INVALIDARG;
 	}
 
-	std::cout << "looking for " << szValueName << std::endl;
 
 	DWORD dwType = REG_SZ;
 
@@ -96,11 +77,9 @@ HRESULT RegGetBeboSZ(HKEY hkey, char * szValueName, char * data, LPDWORD datasiz
 	lstatus = RegQueryValueExW(hkey, valueName, 0, &dwType, (LPBYTE)wdata, &wSize);
 
 	if (lstatus != ERROR_SUCCESS) {
-		std::cout << "error reading key " << szValueName << ":" << lstatus << std::endl;
 		return HRESULT_FROM_WIN32(lstatus);
 	}
 	else if (dwType != REG_SZ) {
-		std::cout << "wrong type " << std::endl;
 		return DISP_E_TYPEMISMATCH;
 	}
 
@@ -110,17 +89,14 @@ HRESULT RegGetBeboSZ(HKEY hkey, char * szValueName, char * data, LPDWORD datasiz
 }
 
 
-char * getSZ(HKEY hkey, char * key) {
+HRESULT getSZ(HKEY hkey, char * key, std::string & value) {
 	DWORD size = 1024;
-	char * value = (char *)malloc(size);
-	HRESULT status = RegGetBeboSZ(hkey, key, value, &size);
-	if (status == NOERROR) {
-		return value;
+	char val[1024] = { 0 };
+	HRESULT status = RegGetBeboSZ(hkey, key, val, &size);
+	if (status == NOERROR && strlen(val) < 1024) {
+		value.assign(val);
 	}
-	else {
-		free(value);
-		return NULL;
-	}
+	return status;
 }
 
 HRESULT RegGetDWord(HKEY hKey, char * szValueName, DWORD * lpdwResult) {
@@ -159,36 +135,27 @@ HRESULT getBool(HKEY hkey, char * key, bool * val) {
 	return status;
 }
 
-HRESULT putSZ(HKEY hkey, char * key, char * value) {
-	if (value == NULL) {
-		value = "";
-    }
-    std::cout << "writing - key: " << key << " value: " << value << std::endl;
+HRESULT putSZ(HKEY hkey, char * key, std::string & value) {
+
 	WCHAR valueName[1024] = { 0 };
 	LSTATUS lstatus = 0;
 	if (!MultiByteToWideChar(CP_UTF8, 0, key, strlen(key), valueName, 1024)) {
 	  return E_INVALIDARG;
 	}
 
-	if (value == NULL) {
-	  return E_INVALIDARG;
-	}
 	WCHAR wdata[2048] = { 0 };
-	DWORD wSize = MultiByteToWideChar(CP_UTF8, 0, value, strlen(value), wdata, 2048);
-	if ((wSize == 0 && strlen(value) != 0) || wSize == 0x0000FFFD0) {
-	  std::cout << "nah" << std::endl;
+	DWORD wSize = MultiByteToWideChar(CP_UTF8, 0, value.c_str(), strlen(value.c_str()), wdata, 2048);
+	if ((wSize == 0 && strlen(value.c_str()) != 0) || wSize == 0x0000FFFD0) {
 	  return E_INVALIDARG;
 	}
 	wSize = wSize * 2 + 2; // write two \0
 
-    std::cout << "now looking for " << key << std::endl;
 
 	DWORD dwType = REG_SZ;
 
 	lstatus = RegSetValueExW(hkey, valueName, 0, dwType, (LPBYTE) wdata, wSize);
 
 	if (lstatus != ERROR_SUCCESS) {
-        std::cout << "error writing key " << lstatus << std::endl;
 		return HRESULT_FROM_WIN32(lstatus);
 	} 
 
@@ -209,14 +176,26 @@ HRESULT putBool(HKEY hkey, char * key, bool val) {
 	lstatus = RegSetValueExW(hkey, valueName, 0, dwType, (LPBYTE) &value, sizeof(value));
 
 	if (lstatus != ERROR_SUCCESS) {
-        std::cout << "error writing key " << lstatus << std::endl;
 		return HRESULT_FROM_WIN32(lstatus);
 	} 
 
 	return NOERROR;
 }
 
+const char * errno_to_text(HRESULT errorNumber) {
+	const char * errorMessage;
+	DWORD nLen = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL,
+		errorNumber,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&errorMessage,
+		0,
+		NULL);
+	return errorMessage;
+}
+
 class GetCaptureWorker: public AsyncWorker {
+
 public:
 	GetCaptureWorker(Callback *callback)
 		: AsyncWorker(callback) {};
@@ -232,28 +211,53 @@ public:
 	// should go on `this`.
 	void Execute() {
 		HKEY hkey = NULL;
-		HRESULT hresult = RegOpen(KEY_READ, &hkey);
+		if (!chk(RegOpen(KEY_READ, &hkey), "Can't open registry")) {
+			return;
+		}
 		this->readData(hkey);
-		RegClose(hkey);
+		chk(RegClose(hkey), "Can't close registry");
+	}
+
+	bool chk(HRESULT hresult, const char * msg) {
+		return chk(hresult, std::string(msg));
+	}
+
+	bool chk(HRESULT hresult, std::string & msg) {
+		std::string mymsg(msg);
+		if (hresult != NOERROR) { 
+			mymsg.append(errno_to_text(hresult));
+			SetErrorMessage(mymsg.c_str());
+			return false;
+		}
+		return true;
+	}
+
+	bool chkPutSZ(HKEY hkey, char * key, std::string & data) {
+		std::string msg("Can't write to registry (");
+		msg.append(key);
+		msg.append(") ");
+		return chk(putSZ(hkey, key, data), msg);
+	}
+
+    bool chkGetSZ(HKEY hkey, char * key, std::string & value) {
+		std::string msg("Can't read from registry (");
+		msg.append(key);
+		msg.append(") ");
+		return chk(getSZ(hkey, key, value), msg);
 	}
 
 	void readData(HKEY hkey) {
-		std::cout << "READ HERE" << std::endl;
-		capture = new CaptureEntity();
-		capture->id = getSZ(hkey, "CaptureId");
-		capture->type = getSZ(hkey, "CaptureType");
-		if (capture->type == NULL) {
-			capture->type = strdup("inject");
-		}
-		capture->label = getSZ(hkey, "CaptureLabel");
-		capture->windowClassName = getSZ(hkey, "CaptureWindowClassName");
-		capture->windowName = getSZ(hkey, "CaptureWindowName");
-        getBool(hkey, "CaptureAntiCheat", &capture->antiCheat);
-		//capture->label = getSZ("CaptureAntiCheat"); // TODO boolean
-	}
 
-	void HandleErrorCallback() {
-		printf("error occured\n");
+		capture = new CaptureEntity();
+		if (!chkGetSZ(hkey, "CaptureId", capture->id)) return;
+		if (!chkGetSZ(hkey, "CaptureType", capture->type)) return;
+		if (capture->type.size() == 0) {
+			capture->type.assign("inject");
+		}
+		if (!chkGetSZ(hkey, "CaptureLabel", capture->label)) return;
+		if (!chkGetSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
+		if (!chkGetSZ(hkey, "CaptureWindowName", capture->windowName)) return;
+        getBool(hkey, "CaptureAntiCheat", &capture->antiCheat);
 	}
 
 	// Executed when the async work is complete
@@ -263,21 +267,11 @@ public:
 		HandleScope scope;
 
 		Local<Object> obj = Nan::New<Object>();
-		if (capture->id) {
           Set(obj, New("id").ToLocalChecked(), New(capture->id).ToLocalChecked());
-		}
-		if (capture->label) {
   		  Set(obj, New("label").ToLocalChecked(),New(capture->label).ToLocalChecked());
-		}
-		if (capture->type) {
 			Set(obj, New("type").ToLocalChecked(), New(capture->type).ToLocalChecked());
-		}
-		if (capture->windowName) {
 			Set(obj, New("windowName").ToLocalChecked(), New(capture->windowName).ToLocalChecked());
-		}
-		if (capture->windowClassName) {
 			Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
-		}
 
 		Set(obj, New("antiCheat").ToLocalChecked(), New(capture->antiCheat));
 
@@ -308,21 +302,21 @@ public:
 	// should go on `this`.
 	void Execute() {
 
-		std::cout << "WRITE HERE" << std::endl;
 		HKEY hkey = NULL;
-		HRESULT hresult = RegOpen(KEY_ALL_ACCESS, &hkey);
-		// TODO handle error cases...
-		putSZ(hkey, "CaptureType", capture->type);
-		putSZ(hkey, "CaptureId", capture->id);
-		putSZ(hkey, "CaptureLabel", capture->label);
-		putSZ(hkey, "CaptureWindowName", capture->windowName);
-		putSZ(hkey, "CaptureWindowClassName", capture->windowClassName);
+		if (!chk(RegOpen(KEY_ALL_ACCESS, &hkey), "Can't open registry for write")) {
+			return;
+		}
+
+		if (!chkPutSZ(hkey, "CaptureType", capture->type)) return;
+		if (!chkPutSZ(hkey, "CaptureId", capture->id)) return;
+		if (!chkPutSZ(hkey, "CaptureLabel", capture->label)) return;
+		if (!chkPutSZ(hkey, "CaptureWindowName", capture->windowName)) return;
+		if (!chkPutSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
 		putBool(hkey, "CaptureAntiCheat", capture->antiCheat);
 		delete(capture);
 		readData(hkey);
-		RegClose(hkey);
+		chk(RegClose(hkey), "Can't close registry");
 	}
-
 
 };
 
