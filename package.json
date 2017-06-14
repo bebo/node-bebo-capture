@@ -19,7 +19,7 @@
   "gypfile": true,
   "name": "bebo-capture",
   "description": "native module for node to control bebo-capture DLL",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "directories": {
     "test": "test"
   },

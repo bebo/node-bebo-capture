@@ -1,26 +1,29 @@
 var BeboCapture = require('../');
 var assert = require('assert');
 
+const emptyValues = {
+  id: "",
+  label: "",
+  type: "inject",
+  windowName: "",
+  windowClassName: "",
+  antiCheat: false 
+}
+
 describe('bebo capture extension', function() {
   it('getCapture should return the current settings', function () {
     return BeboCapture.getCapture()
       .then(function (data) {
         assert(data != null, "capture settings should exist");
-        assert(data.type != null, "capture type should exist");
       }).catch(function(err) {
         console.log(err);
         throw err;
       });
   });
-  it('setCaptureVerify ', function () {
+  it('setCapture clear ', function () {
     let testValues = {
-      id: "test_id",
-      type: "inject",
-      windowClassName: "TankWindow",
-      windowName: "",
-      antiCheat: true 
     };
-    let expected = Object.assign({label: ""}, testValues);
+    let expected = Object.assign({}, emptyValues, testValues);
     return BeboCapture.setCapture(testValues)
       .then(function (result) {
         assert.deepEqual(result, expected);
@@ -34,16 +37,36 @@ describe('bebo capture extension', function() {
         throw err;
       });
   });
-  it('setCapture should set the current settings', function () {
+  it('setCapture desktop and verify', function () {
     let testValues = {
-        id: "test_id",
+      id: "desktop:0",
+      type: "desktop",
+      label: "Screen 0"
+    };
+    let expected = Object.assign({}, emptyValues, testValues);
+    return BeboCapture.setCapture(testValues)
+      .then(function (result) {
+        assert.deepEqual(result, expected);
+      }).then(function verify() {
+        return BeboCapture.getCapture();
+      }).then(function (verifyData) {
+        assert(verifyData != null, "capture settings should exist");
+        assert.deepEqual(verifyData, expected);
+      }).catch(function(err) {
+        console.log(err);
+        throw err;
+      });
+  });
+  it('setCapture inject and verify', function () {
+    let testValues = {
+        id: "",
         type: "inject",
         windowClassName: "TankWindow",
-        windowName: "",
-        antiCheat: false 
+        windowName: "Overwatch",
+        antiCheat: true 
     };
 
-    let expected = Object.assign({label: ""}, testValues);
+    let expected = Object.assign({}, emptyValues, testValues);
     return BeboCapture.setCapture(testValues)
       .then(function (result) {
           assert.deepEqual(result, expected);

@@ -156,7 +156,6 @@ HRESULT putSZ(HKEY hkey, char * key, std::string & value) {
 	}
 	wSize = wSize * 2 + 2; // write two \0
 
-
 	DWORD dwType = REG_SZ;
 
 	lstatus = RegSetValueExW(hkey, valueName, 0, dwType, (LPBYTE) wdata, wSize);
@@ -233,9 +232,12 @@ public:
 		HandleScope scope;
 
 		Local<Object> obj = Nan::New<Object>();
-        Set(obj, New("id").ToLocalChecked(), New(capture->id).ToLocalChecked());
-  		Set(obj, New("label").ToLocalChecked(),New(capture->label).ToLocalChecked());
-		Set(obj, New("type").ToLocalChecked(), New("desktop").ToLocalChecked());
+		Set(obj, New("id").ToLocalChecked(), New(capture->id).ToLocalChecked());
+		Set(obj, New("label").ToLocalChecked(), New(capture->label).ToLocalChecked());
+		Set(obj, New("type").ToLocalChecked(), New(capture->type).ToLocalChecked());
+		Set(obj, New("windowName").ToLocalChecked(), New(capture->windowName).ToLocalChecked());
+		Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
+		Set(obj, New("antiCheat").ToLocalChecked(), New(capture->antiCheat));
 
 		Local<Value> argv[] = {
 			Null()
@@ -299,8 +301,9 @@ protected:
 			capture->type.assign("inject");
 		}
 		if (!chkGetSZ(hkey, "CaptureLabel", capture->label)) return;
-		if (!chkGetSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
+
 		if (!chkGetSZ(hkey, "CaptureWindowName", capture->windowName)) return;
+		if (!chkGetSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
         if (!chkGetBool(hkey, "CaptureAntiCheat", &capture->antiCheat)) return;
 	}
 };
@@ -325,10 +328,12 @@ public:
 			return;
 		}
 
-		if (!chkPutSZ(hkey, "CaptureType", capture->type)) return;
 		if (!chkPutSZ(hkey, "CaptureId", capture->id)) return;
+		if (!chkPutSZ(hkey, "CaptureType", capture->type)) return;
 		if (!chkPutSZ(hkey, "CaptureLabel", capture->label)) return;
+
 		if (!chkPutSZ(hkey, "CaptureWindowName", capture->windowName)) return;
+		if (!chkPutSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
 		if (!chkPutBool(hkey, "CaptureAntiCheat", capture->antiCheat)) return;
 		delete(capture);
 		readData(hkey);
