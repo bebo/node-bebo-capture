@@ -2,6 +2,9 @@
 #include <windows.h>
 #include <iostream>
 #include <string.h>
+#include <DXGI.h>
+#include <D3DCommon.h>
+#include <D3D11.h>
 
 using Nan::Callback;
 using v8::Function;
@@ -9,6 +12,7 @@ using v8::Local;
 using v8::Number;
 using v8::Object;
 using v8::Value;
+using v8::Array;
 using Nan::AsyncQueueWorker;
 using Nan::AsyncWorker;
 using Nan::Callback;
@@ -49,7 +53,7 @@ HRESULT RegOpen(REGSAM samDesired, HKEY * hkey) {
 HRESULT RegClose(HKEY hkey) {
 	LSTATUS lstatus = RegCloseKey(hkey);
 	if (lstatus != ERROR_SUCCESS) {
-		return E_INVALIDARG;
+		return HRESULT_FROM_WIN32(lstatus);
 	}
 	return NOERROR;
 }
@@ -65,7 +69,6 @@ HRESULT RegGetBeboSZ(HKEY hkey, char * szValueName, char * data, LPDWORD datasiz
 	if (data == NULL) {
 		return E_INVALIDARG;
 	}
-
 
 	DWORD dwType = REG_SZ;
 
@@ -120,8 +123,11 @@ HRESULT RegGetDWord(HKEY hKey, char * szValueName, DWORD * lpdwResult) {
 	lResult = RegQueryValueExW(hKey, valueName, 0, &dwType, (LPBYTE) lpdwResult, &dwDataSize );
 
 	// Check result and make sure the registry value is a DWORD(REG_DWORD)...
-	if (lResult != ERROR_SUCCESS) return HRESULT_FROM_WIN32(lResult);
-	else if (dwType != REG_DWORD) return DISP_E_TYPEMISMATCH;
+	if (lResult != ERROR_SUCCESS) {
+		return HRESULT_FROM_WIN32(lResult);
+	} else if (dwType != REG_DWORD) {
+		return DISP_E_TYPEMISMATCH;
+	}
 
 	return NOERROR;
 }
@@ -163,6 +169,7 @@ HRESULT putSZ(HKEY hkey, char * key, std::string & value) {
 }
 
 HRESULT putBool(HKEY hkey, char * key, bool val) {
+
 	WCHAR valueName[1024] = { 0 };
 	LSTATUS lstatus = 0;
 	if (!MultiByteToWideChar(CP_UTF8, 0, key, strlen(key), valueName, 1024)) {
@@ -218,9 +225,28 @@ public:
 		chk(RegClose(hkey), "Can't close registry");
 	}
 
-	bool chk(HRESULT hresult, const char * msg) {
-		return chk(hresult, std::string(msg));
+
+	// Executed when the async work is complete
+	// this function will be run inside the main event loop
+	// so it is safe to use V8 again
+	void HandleOKCallback() {
+		HandleScope scope;
+
+		Local<Object> obj = Nan::New<Object>();
+        Set(obj, New("id").ToLocalChecked(), New(capture->id).ToLocalChecked());
+  		Set(obj, New("label").ToLocalChecked(),New(capture->label).ToLocalChecked());
+		Set(obj, New("type").ToLocalChecked(), New("desktop").ToLocalChecked());
+
+		Local<Value> argv[] = {
+			Null()
+			, obj
+		};
+
+		callback->Call(2, argv);
 	}
+
+protected:
+	CaptureEntity *capture;
 
 	bool chk(HRESULT hresult, std::string & msg) {
 		std::string mymsg(msg);
@@ -230,6 +256,24 @@ public:
 			return false;
 		}
 		return true;
+	}
+
+	bool chk(HRESULT hresult, const char * msg) {
+		return chk(hresult, std::string(msg));
+	}
+
+	bool chkGetBool(HKEY hkey, char * key, bool *data) {
+		std::string msg("Can't read from registry (");
+		msg.append(key);
+		msg.append(") ");
+		return chk(getBool(hkey, key, data), msg);
+	}
+
+	bool chkPutBool(HKEY hkey, char * key, bool data) {
+		std::string msg("Can't write to registry (");
+		msg.append(key);
+		msg.append(") ");
+		return chk(putBool(hkey, key, data), msg);
 	}
 
 	bool chkPutSZ(HKEY hkey, char * key, std::string & data) {
@@ -257,34 +301,8 @@ public:
 		if (!chkGetSZ(hkey, "CaptureLabel", capture->label)) return;
 		if (!chkGetSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
 		if (!chkGetSZ(hkey, "CaptureWindowName", capture->windowName)) return;
-        getBool(hkey, "CaptureAntiCheat", &capture->antiCheat);
+        if (!chkGetBool(hkey, "CaptureAntiCheat", &capture->antiCheat)) return;
 	}
-
-	// Executed when the async work is complete
-	// this function will be run inside the main event loop
-	// so it is safe to use V8 again
-	void HandleOKCallback() {
-		HandleScope scope;
-
-		Local<Object> obj = Nan::New<Object>();
-          Set(obj, New("id").ToLocalChecked(), New(capture->id).ToLocalChecked());
-  		  Set(obj, New("label").ToLocalChecked(),New(capture->label).ToLocalChecked());
-			Set(obj, New("type").ToLocalChecked(), New(capture->type).ToLocalChecked());
-			Set(obj, New("windowName").ToLocalChecked(), New(capture->windowName).ToLocalChecked());
-			Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
-
-		Set(obj, New("antiCheat").ToLocalChecked(), New(capture->antiCheat));
-
-		Local<Value> argv[] = {
-			Null()
-			, obj
-		};
-
-		callback->Call(2, argv);
-	}
-
-protected:
-	CaptureEntity *capture;
 };
 
 class SetCaptureWorker: public GetCaptureWorker {
@@ -311,8 +329,7 @@ public:
 		if (!chkPutSZ(hkey, "CaptureId", capture->id)) return;
 		if (!chkPutSZ(hkey, "CaptureLabel", capture->label)) return;
 		if (!chkPutSZ(hkey, "CaptureWindowName", capture->windowName)) return;
-		if (!chkPutSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
-		putBool(hkey, "CaptureAntiCheat", capture->antiCheat);
+		if (!chkPutBool(hkey, "CaptureAntiCheat", capture->antiCheat)) return;
 		delete(capture);
 		readData(hkey);
 		chk(RegClose(hkey), "Can't close registry");
@@ -351,4 +368,139 @@ NAN_METHOD(setCapture) {
 
 	Callback *callback = new Callback(info[6].As<Function>());
 	AsyncQueueWorker(new SetCaptureWorker(capture, callback));
+}
+
+class GetDesktopsWorker: public AsyncWorker {
+
+public:
+	GetDesktopsWorker(Callback *callback)
+		: AsyncWorker(callback), screenCount(0) {};
+	~GetDesktopsWorker() {
+	};
+
+	// Executed inside the worker-thread.
+	// It is not safe to access V8, or V8 data structures
+	// here, so everything we need for input and output
+	// should go on `this`.
+	void Execute() {
+		ID3D11Device *device;
+
+		D3D_DRIVER_TYPE DriverTypes[] =
+		{
+			D3D_DRIVER_TYPE_HARDWARE,
+			D3D_DRIVER_TYPE_WARP,
+			D3D_DRIVER_TYPE_REFERENCE,
+		};
+		UINT NumDriverTypes = ARRAYSIZE(DriverTypes);
+
+
+		HRESULT hr;
+		// Create device
+		for (UINT DriverTypeIndex = 0; DriverTypeIndex < NumDriverTypes; ++DriverTypeIndex)
+		{
+			hr = D3D11CreateDevice(nullptr, DriverTypes[DriverTypeIndex], nullptr, 0, NULL, 0,
+				D3D11_SDK_VERSION, &device, NULL, NULL);
+			if (SUCCEEDED(hr))
+			{
+				// Device creation success, no need to loop anymore
+				break;
+			}
+		}
+		if (!chk(hr, "can't open d3d device")) return;
+
+		IDXGIDevice* dxgiDevice = nullptr;
+		hr = device->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
+		if (!chk(hr, "can't open dxgi device")) return;
+
+		IDXGIAdapter* dxgiAdapter = nullptr;
+		hr = dxgiDevice->GetParent(__uuidof(IDXGIAdapter), reinterpret_cast<void**>(&dxgiAdapter));
+		if (!chk(hr, "can't open dxgi adapter")) return;
+
+		IDXGIFactory * dxgiFactory = nullptr;
+		hr = dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void **)&dxgiFactory);
+		if (!chk(hr, "can't open dxgi factory")) return;
+
+		UINT i = 0;
+		IDXGIAdapter * a;
+		while (dxgiFactory->EnumAdapters(i, &a) != DXGI_ERROR_NOT_FOUND) {
+			UINT j = 0;
+			IDXGIOutput * pOutput;
+			while (a->EnumOutputs(j, &pOutput) != DXGI_ERROR_NOT_FOUND)
+			{
+				DXGI_OUTPUT_DESC desc = { 0 };
+				HRESULT hr = pOutput->GetDesc(&desc);
+				if (SUCCEEDED(hr)) {
+					if (desc.AttachedToDesktop) {
+						// MONITORINFOEX mi;
+						// ZeroMemory(&mi, sizeof(mi));
+						// mi.cbSize = sizeof(mi);
+						// GetMonitorInfoA(desc.Monitor, &mi);
+						// std::cout << mi.szDevice << " " << desc.Monitor << std::endl;
+
+						screenCount++;
+					} 
+				} 
+				pOutput->Release();
+				++j;
+			}
+			a->Release();
+			++i;
+		}
+		chk(hr, "could not find monitor");
+
+	}
+
+
+	// Executed when the async work is complete
+	// this function will be run inside the main event loop
+	// so it is safe to use V8 again
+	void HandleOKCallback() {
+		HandleScope scope;
+
+		Local<Array> result = Nan::New<Array>(screenCount);
+		for (int i = 0; i < screenCount; i++) {
+		  Local<Object> obj = Nan::New<Object>();
+		  std::string id("desktop:");
+		  char nr[4] = { 0 };
+		  sprintf(nr, "%d", i);
+		  id.append(nr);
+		  
+		  std::string label("Screen ");
+		  sprintf(nr, "%d", i+1);
+		  label.append(nr);
+
+          Set(obj, New("id").ToLocalChecked(), New(id).ToLocalChecked());
+  		  Set(obj, New("label").ToLocalChecked(),New(label).ToLocalChecked());
+		  Set(obj, New("type").ToLocalChecked(), New("desktop").ToLocalChecked());
+		  Nan::Set(result, i, obj);
+		}
+
+		Local<Value> argv[] = { Null() , result };
+
+		callback->Call(2, argv);
+	}
+
+protected:
+	int screenCount;
+
+
+	bool chk(HRESULT hresult, std::string & msg) {
+		std::string mymsg(msg);
+		if (hresult != NOERROR) { 
+			mymsg.append(errno_to_text(hresult));
+			SetErrorMessage(mymsg.c_str());
+			return false;
+		}
+		return true;
+	}
+
+	bool chk(HRESULT hresult, const char * msg) {
+		return chk(hresult, std::string(msg));
+	}
+
+};
+
+NAN_METHOD(getDesktops) {
+	Callback *callback = new Callback(info[0].As<Function>());
+	AsyncQueueWorker(new GetDesktopsWorker(callback));
 }

@@ -11,7 +11,9 @@ var BeboCapture = {
 };
 
 BeboCapture.getCapture = promisify(Native.getCapture);
+BeboCapture.getDesktops = promisify(Native.getDesktops);
 
+/*
 BeboCapture.getDesktops = () => {
     // TODO FAKE FOR NOW
     return new Promise((resolve) => {
@@ -27,10 +29,10 @@ BeboCapture.getDesktops = () => {
         return resolve(result);
     });
 }
+*/
 
 var setCapture = promisify(Native.setCapture);
 BeboCapture.setCapture = (options) => {
-    console.log("setCapture called", options);
     if (!typeof(options) === 'object') {
         return new Promise((_, reject) => { reject("invalid object") });
     }

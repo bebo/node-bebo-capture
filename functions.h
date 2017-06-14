@@ -5,5 +5,6 @@
 
 NAN_METHOD(getCapture);
 NAN_METHOD(setCapture);
+NAN_METHOD(getDesktops);
 
 #endif
