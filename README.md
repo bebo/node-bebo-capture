@@ -10,11 +10,11 @@ BeboCapture.getDesktops()
   .then(deviceList => console.log(deviceList));
 // outputs:
 [{
-   id: "desktop:0",
+   id: "desktop:0:0",
    label: "Screen 0",
    type: "desktop"
  },{
-   id: "desktop:1",
+   id: "desktop:0:1",
    label: "Screen 1",
    type: "desktop"
 }]
@@ -26,20 +26,21 @@ BeboCapture.getDesktops()
 ```JavaScript
 let options = {
   id: "desktop:0",
-  type: "desktop"
+  type: "desktop",
+  label: "Screen 0"
 };
 
 BeboCapture.setCapture(options)
-  .then((capture) => console.log("capturing screen 0", capture));
+  .then((capture) => console.log("capturing screen 1", capture));
 ```
 
 ### Capture Game (inject)
 ```JavaScript
 let options = {
   type: "inject",
-  captureWindowClassName: "TankWindow",
-  captureWindowName: "",
-  captureAntiCheat: false
+  windowClassName: "TankWindow",
+  windowName: "Overwatch",
+  antiCheat: true 
 };
 
 BeboCapture.setCapture(options)
@@ -55,9 +56,9 @@ BeboCapture.getCapture()
   .then(currentSettings => console.log(currentSettings));
 // outputs e.g. for desktop
 {
-   id: "desktop:0",
-   label: "Screen 0",
-   type: "desktop"
+  id: "desktop:0",
+  type: "desktop",
+  label: "Screen 0"
 }
 ```
 
