@@ -39,7 +39,7 @@ describe('bebo capture extension', function() {
   });
   it('setCapture desktop and verify', function () {
     let testValues = {
-      id: "desktop:0",
+      id: "desktop:0:0",
       type: "desktop",
       label: "Screen 0"
     };
@@ -81,8 +81,8 @@ describe('bebo capture extension', function() {
             console.log("desktops", data);
             assert(data.length > 0, "expect one or more desktops");
             assert(data[0].type === 'desktop', "expect capture type desktop");
-            assert(data[0].id === 'desktop:0:0', "capture id should be desktop:0");
-            assert(data[0].label === 'Screen 1', "capture id should be desktop:0");
+            assert(data[0].id === 'desktop:0:0', "capture id should be desktop:0:0");
+            assert(data[0].label === 'Screen 1', "capture label should be Screen 1");
       }).catch(function(err) {
         console.log(err);
         throw err;
