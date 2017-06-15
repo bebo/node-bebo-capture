@@ -63,5 +63,23 @@ BeboCapture.getCapture()
 ```
 
 
+# How to build
 
+Have Visual Studio 2015 SP3 installed
 
+If you don't have visual studio in your env you may need to run this in the Visual Studio Command Prompt.
+
+Also run in cmd not Ubuntu bash,... (yes you know who I am talking to)
+
+```
+npm install -g node-gyp
+npm install -g mocha
+
+npm config set msvs_version "2015"
+node-gyp configure
+
+# if you want debug
+# node-gyp configure --debug
+
+npm run build
+npm test
