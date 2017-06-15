@@ -78,11 +78,11 @@ describe('bebo capture extension', function() {
   it('getDesktops should return the current settings', function () {
       return BeboCapture.getDesktops()
         .then(function (data) {
+            console.log("desktops", data);
             assert(data.length > 0, "expect one or more desktops");
             assert(data[0].type === 'desktop', "expect capture type desktop");
-            assert(data[0].id === 'desktop:0', "capture id should be desktop:0");
+            assert(data[0].id === 'desktop:0:0', "capture id should be desktop:0");
             assert(data[0].label === 'Screen 1', "capture id should be desktop:0");
-            console.log("desktops", data);
       }).catch(function(err) {
         console.log(err);
         throw err;

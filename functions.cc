@@ -5,6 +5,7 @@
 #include <DXGI.h>
 #include <D3DCommon.h>
 #include <D3D11.h>
+#include <list>
 
 using Nan::Callback;
 using v8::Function;
@@ -379,7 +380,8 @@ class GetDesktopsWorker: public AsyncWorker {
 
 public:
 	GetDesktopsWorker(Callback *callback)
-		: AsyncWorker(callback), screenCount(0) {};
+		: AsyncWorker(callback) {
+		};
 	~GetDesktopsWorker() {
 	};
 
@@ -441,8 +443,11 @@ public:
 						// mi.cbSize = sizeof(mi);
 						// GetMonitorInfoA(desc.Monitor, &mi);
 						// std::cout << mi.szDevice << " " << desc.Monitor << std::endl;
-
-						screenCount++;
+						std::string id("desktop:");
+						id.append(std::to_string(i));
+						id.append(":");
+						id.append(std::to_string(j));
+						screens.push_back(id);
 					} 
 				} 
 				pOutput->Release();
@@ -462,22 +467,19 @@ public:
 	void HandleOKCallback() {
 		HandleScope scope;
 
-		Local<Array> result = Nan::New<Array>(screenCount);
-		for (int i = 0; i < screenCount; i++) {
+		Local<Array> result = Nan::New<Array>(screens.size());
+		int screenNr = 1;
+		for (std::list<std::string>::iterator it = screens.begin(); it != screens.end(); ++it) {
 		  Local<Object> obj = Nan::New<Object>();
-		  std::string id("desktop:");
-		  char nr[4] = { 0 };
-		  sprintf(nr, "%d", i);
-		  id.append(nr);
-		  
+		  std::string id = *it;
 		  std::string label("Screen ");
-		  sprintf(nr, "%d", i+1);
-		  label.append(nr);
+		  label.append(std::to_string(screenNr));
 
           Set(obj, New("id").ToLocalChecked(), New(id).ToLocalChecked());
   		  Set(obj, New("label").ToLocalChecked(),New(label).ToLocalChecked());
 		  Set(obj, New("type").ToLocalChecked(), New("desktop").ToLocalChecked());
-		  Nan::Set(result, i, obj);
+		  Nan::Set(result, screenNr-1, obj);
+		  screenNr++;
 		}
 
 		Local<Value> argv[] = { Null() , result };
@@ -486,7 +488,7 @@ public:
 	}
 
 protected:
-	int screenCount;
+	std::list<std::string> screens;
 
 
 	bool chk(HRESULT hresult, std::string & msg) {
