@@ -1,4 +1,5 @@
-#include "functions.h"
+#include "CaptureFunctions.h"
+#include "DesktopListFunctions.h"
 
 using v8::FunctionTemplate;
 
