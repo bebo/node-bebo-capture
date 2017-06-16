@@ -12,6 +12,7 @@ var BeboCapture = {
 
 BeboCapture.getCapture = promisify(Native.getCapture);
 BeboCapture.getDesktops = promisify(Native.getDesktops);
+BeboCapture.getWindowList = promisify(Native.getWindowList);
 
 /*
 BeboCapture.getDesktops = () => {

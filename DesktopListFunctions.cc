@@ -1,6 +1,6 @@
-#include "WinAsyncWorker.h"
 #include "DesktopListFunctions.h"
 
+#include <nan.h>
 #include <windows.h>
 #include <iostream>
 #include <string.h>

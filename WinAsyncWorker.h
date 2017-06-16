@@ -7,6 +7,9 @@ class WinAsyncWorker :
 public:
 	WinAsyncWorker(Nan::Callback *callback) : Nan::AsyncWorker(callback) {};
 	~WinAsyncWorker() {};
+protected:
+	bool chk(HRESULT hresult, std::string & msg);
+	bool chk(HRESULT hresult, const char * msg);
 };
 
 

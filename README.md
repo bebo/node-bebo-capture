@@ -20,6 +20,20 @@ BeboCapture.getDesktops()
 }]
 ```
 
+## BeboCapture.getWindowList()
+```JavaScript
+const BeboCapture = require('bebo-capture');
+
+BeboCapture.getWindowList()
+  .then(windowList => console.log(windowList));
+// outputs:
+[{
+   windowClassName: "TankWindow",
+   windowName: "Overwatch",
+ }
+}]
+```
+
 ## BeboCapture.setCapture()
 
 ### Capture Desktop

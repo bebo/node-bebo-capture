@@ -163,3 +163,17 @@ const char * errno_to_text(HRESULT errorNumber) {
 		NULL);
 	return errorMessage;
 }
+
+bool WinAsyncWorker::chk(HRESULT hresult, std::string & msg) {
+	std::string mymsg(msg);
+	if (hresult != NOERROR) { 
+		mymsg.append(errno_to_text(hresult));
+		SetErrorMessage(mymsg.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool WinAsyncWorker::chk(HRESULT hresult, const char * msg) {
+	return chk(hresult, std::string(msg));
+}
