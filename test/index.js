@@ -75,14 +75,15 @@ describe('bebo capture extension', function() {
         throw err;
       });
   });
-  it('getDesktops should return the current settings', function () {
-      return BeboCapture.getDesktops()
+  it('getDesktopList should return the current settings', function () {
+    return BeboCapture.getDesktopList()
         .then(function (data) {
             console.log("desktops", data);
             assert(data.length > 0, "expect one or more desktops");
             assert(data[0].type === 'desktop', "expect capture type desktop");
             assert(data[0].id === 'desktop:0:0', "capture id should be desktop:0:0");
             assert(data[0].label === 'Screen 1', "capture label should be Screen 1");
+            assert(Array.isArray(data), "expect array");
       }).catch(function(err) {
         console.log(err);
         throw err;
@@ -91,7 +92,8 @@ describe('bebo capture extension', function() {
   it('getWindowList return list of windows', function () {
       return BeboCapture.getWindowList()
         .then(function (data) {
-            console.log("windows", data);
+          console.log("windows", data);
+          assert(Array.isArray(data), "expect array");
           /*
             assert(data.length > 0, "expect one or more desktops");
             assert(data[0].type === 'desktop', "expect capture type desktop");

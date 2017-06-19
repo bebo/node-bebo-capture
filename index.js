@@ -12,25 +12,8 @@ var BeboCapture = {
 
 BeboCapture.getCapture = promisify(Native.getCapture);
 BeboCapture.getDesktops = promisify(Native.getDesktops);
+BeboCapture.getDesktopList = promisify(Native.getDesktops);
 BeboCapture.getWindowList = promisify(Native.getWindowList);
-
-/*
-BeboCapture.getDesktops = () => {
-    // TODO FAKE FOR NOW
-    return new Promise((resolve) => {
-        let result = [{
-            id: "desktop:0",
-            label: "Screen 1",
-            type: "desktop"
-        },{
-            id: "desktop:1",
-            label: "Screen 2",
-            type: "desktop"
-        }];
-        return resolve(result);
-    });
-}
-*/
 
 var setCapture = promisify(Native.setCapture);
 BeboCapture.setCapture = (options) => {
