@@ -1,6 +1,11 @@
 #include "CaptureFunctions.h"
 #include "WinAsyncWorker.h"
 
+#include <string>
+#include <cstdint>
+#include <cinttypes>
+#include <iostream>
+
 using Nan::AsyncQueueWorker;
 using Nan::AsyncWorker;
 using Nan::Callback;
@@ -19,6 +24,7 @@ using Nan::New;
 using Nan::Set;
 using Nan::Null;
 using Nan::To;
+
 
 class GetCaptureWorker: public WinAsyncWorker {
 
@@ -58,6 +64,12 @@ public:
 		Set(obj, New("windowName").ToLocalChecked(), New(capture->windowName).ToLocalChecked());
 		Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
 		Set(obj, New("antiCheat").ToLocalChecked(), New(capture->antiCheat));
+                
+                if (capture->hwnd != 0) {
+		    char windowHandle[20] = {0};
+	            std::sprintf(windowHandle, "0x%016" PRIx64, capture->hwnd);
+		    Set(obj, New("windowHandle").ToLocalChecked(), New(windowHandle).ToLocalChecked());
+                }
 
 		Local<Value> argv[] = {
 			Null()
@@ -89,6 +101,20 @@ protected:
 		msg.append(key);
 		msg.append(") ");
 		return chk(getBool(hkey, key, data), msg);
+	}
+
+	bool chkGetQWord(HKEY hkey, char * key, uint64_t *data) {
+		std::string msg("Can't read from registry (");
+		msg.append(key);
+		msg.append(") ");
+		return chk(getQWord(hkey, key, data), msg);
+	}
+
+	bool chkPutQWord(HKEY hkey, char * key, uint64_t data) {
+		std::string msg("Can't write to registry (");
+		msg.append(key);
+		msg.append(") ");
+		return chk(putQWord(hkey, key, data), msg);
 	}
 
 	bool chkPutBool(HKEY hkey, char * key, bool data) {
@@ -125,6 +151,8 @@ protected:
 		if (!chkGetSZ(hkey, "CaptureWindowName", capture->windowName)) return;
 		if (!chkGetSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
         if (!chkGetBool(hkey, "CaptureAntiCheat", &capture->antiCheat)) return;
+        if (!chkGetQWord(hkey, "CaptureWindowHandle", &capture->hwnd)) return;
+
 	}
 };
 
@@ -155,6 +183,7 @@ public:
 		if (!chkPutSZ(hkey, "CaptureWindowName", capture->windowName)) return;
 		if (!chkPutSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
 		if (!chkPutBool(hkey, "CaptureAntiCheat", capture->antiCheat)) return;
+        if (!chkPutQWord(hkey, "CaptureWindowHandle", capture->hwnd)) return;
 		delete(capture);
 		readData(hkey);
 		chk(RegClose(hkey), "Can't close registry");
@@ -186,11 +215,25 @@ NAN_METHOD(setCapture) {
 	capture->label = cpStringArg(info, 2);
 	capture->windowName = cpStringArg(info, 3);
 	capture->windowClassName = cpStringArg(info, 4);
+
 	Nan::Maybe<bool> antiCheat = Nan::To<bool>(info[5]);
 	if (!info[5].IsEmpty()) {
 		capture->antiCheat = antiCheat.ToChecked();
 	}
 
-	Callback *callback = new Callback(info[6].As<Function>());
+    if (!info[6].IsEmpty()) {
+        Nan::Utf8String nan_string(info[6]);
+        std::string hwnd(*nan_string);
+        if (hwnd.size() > 0) {
+            try {
+                capture->hwnd = stoull(hwnd, 0, 16);
+            } catch (std::invalid_argument) {
+                // TODO: throw back js exception...
+                std::cout << "Invalid number string" << hwnd << std::endl;
+            }
+        }
+	}
+
+	Callback *callback = new Callback(info[7].As<Function>());
 	AsyncQueueWorker(new SetCaptureWorker(capture, callback));
 }

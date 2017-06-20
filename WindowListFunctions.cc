@@ -10,6 +10,10 @@
 #include <list>
 #include "WinAsyncWorker.h"
 #include <functional>
+#include <string>
+#include <cstdint>
+#include <cinttypes>
+
 
 using Nan::Callback;
 using v8::Function;
@@ -93,6 +97,10 @@ public:
 			Local<Object> obj = Nan::New<Object>();
 			Set(obj, New("windowName").ToLocalChecked(), New(capture->windowName).ToLocalChecked());
 			Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
+			char windowHandle[20] = {0};
+			std::sprintf(windowHandle, "0x%016" PRIx64, capture->hwnd);
+			Set(obj, New("windowHandle").ToLocalChecked(),
+New(windowHandle).ToLocalChecked());
 		    Nan::Set(result, i, obj);
 			i++;
 		}
@@ -116,18 +124,18 @@ public:
 		GetClassNameW(hWnd, class_name, 1024);
 		GetWindowThreadProcessId(hWnd, &pid);
 
-
-	    CaptureEntity *capture = new CaptureEntity();
+                CaptureEntity *capture = new CaptureEntity();
 
 		char title_utf8[1024] = { 0 };
 		int title_utf8_size = 1024;
-        WideCharToMultiByte(CP_UTF8, 0, title, sizeof(title), title_utf8, title_utf8_size, NULL, NULL);
+                WideCharToMultiByte(CP_UTF8, 0, title, sizeof(title), title_utf8, title_utf8_size, NULL, NULL);
 		capture->windowName.append(title_utf8);
 
 		char class_name_utf8[1024] = { 0 };
 		int class_name_utf8_size = 1024;
-        WideCharToMultiByte(CP_UTF8, 0, class_name, sizeof(class_name), class_name_utf8, class_name_utf8_size, NULL, NULL);
+                WideCharToMultiByte(CP_UTF8, 0, class_name, sizeof(class_name), class_name_utf8, class_name_utf8_size, NULL, NULL);
 		capture->windowClassName.append(class_name_utf8);
+                capture->hwnd = (uint64_t) hWnd;
 
 		windowList.push_back(capture);
 

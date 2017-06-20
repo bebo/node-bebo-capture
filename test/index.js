@@ -1,3 +1,5 @@
+/*eslint eqeqeq: ["error", "smart"]*/
+
 var BeboCapture = require('../');
 var assert = require('assert');
 
@@ -42,6 +44,29 @@ describe('bebo capture extension', function() {
       id: "desktop:0:0",
       type: "desktop",
       label: "Screen 0"
+    };
+    let expected = Object.assign({}, emptyValues, testValues);
+    return BeboCapture.setCapture(testValues)
+      .then(function (result) {
+        assert.deepEqual(result, expected);
+      }).then(function verify() {
+        return BeboCapture.getCapture();
+      }).then(function (verifyData) {
+        assert(verifyData != null, "capture settings should exist");
+        assert.deepEqual(verifyData, expected);
+      }).catch(function(err) {
+        console.log(err);
+        throw err;
+      });
+  });
+  it('setCapture window and verify', function () {
+    let testValues = {
+      id: "gdi",
+      type: "gdi",
+      label: "My Favorite window",
+      windowHandle: "0xdeadbeefdeadbeef",
+      windowClassName: "TankWindow",
+      windowName: "Overwatch"
     };
     let expected = Object.assign({}, emptyValues, testValues);
     return BeboCapture.setCapture(testValues)

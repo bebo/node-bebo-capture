@@ -1,5 +1,6 @@
 #include "WinAsyncWorker.h"
 
+typedef unsigned __int64 QWORD;
 
 
 HRESULT RegOpen(REGSAM samDesired, HKEY * hkey) {
@@ -105,6 +106,43 @@ HRESULT getBool(HKEY hkey, char * key, bool * val) {
 	return status;
 }
 
+HRESULT RegGetQWord(HKEY hKey, char * szValueName, QWORD * lpdwResult) {
+
+	LONG lResult;
+	DWORD dwDataSize = sizeof(QWORD);
+	DWORD dwType = REG_QWORD;
+	WCHAR valueName[1024] = { 0 };
+
+	if (!MultiByteToWideChar(CP_UTF8, 0, szValueName, strlen(szValueName), valueName, 1024)) {
+		return E_INVALIDARG;
+	}
+
+	// Check input parameters...
+	if (hKey == NULL || lpdwResult == NULL) return E_INVALIDARG;
+
+	// Get dword value from the registry...
+	lResult = RegQueryValueExW(hKey, valueName, 0, &dwType, (LPBYTE)lpdwResult, &dwDataSize);
+
+	// Check result and make sure the registry value is a QWORD(REG_QWORD)...
+	if (lResult != ERROR_SUCCESS) {
+		return HRESULT_FROM_WIN32(lResult);
+	}
+	else if (dwType != REG_QWORD) {
+		return DISP_E_TYPEMISMATCH;
+	}
+
+	return NOERROR;
+}
+
+HRESULT getQWord(HKEY hkey, char * key, uint64_t * val) {
+	QWORD value = 0;
+	HRESULT status = RegGetQWord(hkey, key, &value);
+	if (status == NOERROR) {
+        *val = value;
+	}
+	return status;
+}
+
 HRESULT putSZ(HKEY hkey, char * key, std::string & value) {
 
 	WCHAR valueName[1024] = { 0 };
@@ -131,6 +169,25 @@ HRESULT putSZ(HKEY hkey, char * key, std::string & value) {
 	return NOERROR;
 }
 
+HRESULT putQWord(HKEY hkey, char * key, uint64_t val) {
+
+	WCHAR valueName[1024] = { 0 };
+	LSTATUS lstatus = 0;
+	if (!MultiByteToWideChar(CP_UTF8, 0, key, strlen(key), valueName, 1024)) {
+		return E_INVALIDARG;
+	}
+
+	QWORD value = val;
+	DWORD dwType = REG_QWORD;
+
+	lstatus = RegSetValueExW(hkey, valueName, 0, dwType, (LPBYTE)&value, sizeof(value));
+
+	if (lstatus != ERROR_SUCCESS) {
+		return HRESULT_FROM_WIN32(lstatus);
+	}
+
+	return NOERROR;
+}
 HRESULT putBool(HKEY hkey, char * key, bool val) {
 
 	WCHAR valueName[1024] = { 0 };

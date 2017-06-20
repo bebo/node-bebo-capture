@@ -20,7 +20,7 @@ BeboCapture.setCapture = (options) => {
     if (!typeof(options) === 'object') {
         return new Promise((_, reject) => { reject("invalid object") });
     }
-    return setCapture(options.type || "", options.id || "", options.label || "", options.windowName || "", options.windowClassName || "", options.antiCheat || false);
+    return setCapture(options.type || "", options.id || "", options.label || "", options.windowName || "", options.windowClassName || "", options.antiCheat || false, options.windowHandle || "");
 }
 
 module.exports = BeboCapture;

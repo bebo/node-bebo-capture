@@ -2,11 +2,11 @@
 native module for node to control bebo-capture DLL
 
 
-## BeboCapture.getDesktops()
+## BeboCapture.getDesktopList()
 ```JavaScript
 const BeboCapture = require('bebo-capture');
 
-BeboCapture.getDesktops()
+BeboCapture.getDesktopList()
   .then(deviceList => console.log(deviceList));
 // outputs:
 [{
@@ -27,11 +27,15 @@ const BeboCapture = require('bebo-capture');
 BeboCapture.getWindowList()
   .then(windowList => console.log(windowList));
 // outputs:
-[{
-   windowClassName: "TankWindow",
-   windowName: "Overwatch",
- }
-}]
+[{  
+    windowName: 'results.txt - Notepad',
+    windowClassName: 'Notepad',
+    windowHandle: '0x00000000000d0a58'
+ }, {
+    windowName: 'Process Explorer - Sysinternals: www.sysinternals.com [ATHENA\\fpn]',
+    windowClassName: 'PROCEXPL',
+    windowHandle: '0x00000000000a07de'
+]
 ```
 
 ## BeboCapture.setCapture()
