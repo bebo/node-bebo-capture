@@ -2,6 +2,7 @@
 #include "DesktopListFunctions.h"
 
 #include <windows.h>
+#include <Psapi.h>
 #include <iostream>
 #include <string.h>
 #include <DXGI.h>
@@ -99,8 +100,8 @@ public:
 			Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
 			char windowHandle[20] = {0};
 			std::sprintf(windowHandle, "0x%016" PRIx64, capture->hwnd);
-			Set(obj, New("windowHandle").ToLocalChecked(),
-New(windowHandle).ToLocalChecked());
+			Set(obj, New("windowHandle").ToLocalChecked(), New(windowHandle).ToLocalChecked());
+			Set(obj, New("exeFullName").ToLocalChecked(), New(capture->exeFullName).ToLocalChecked());
 		    Nan::Set(result, i, obj);
 			i++;
 		}
@@ -110,8 +111,7 @@ New(windowHandle).ToLocalChecked());
 		callback->Call(2, argv);
 	}
 
-	BOOL EnumerationCallback(HWND hWnd)
-	{
+	BOOL EnumerationCallback(HWND hWnd) {
 		WCHAR title[1024] = { 0 };
 		WCHAR class_name[1024] = { 0 };
 		DWORD pid = 0;
@@ -119,16 +119,15 @@ New(windowHandle).ToLocalChecked());
 		if (!IsAltTabWindow(hWnd)) {
 			return TRUE;
 		}
+        CaptureEntity *capture = new CaptureEntity();
 
 		GetWindowTextW(hWnd, title, 1024);
 		GetClassNameW(hWnd, class_name, 1024);
 		GetWindowThreadProcessId(hWnd, &pid);
 
-                CaptureEntity *capture = new CaptureEntity();
-
 		char title_utf8[1024] = { 0 };
 		int title_utf8_size = 1024;
-                WideCharToMultiByte(CP_UTF8, 0, title, sizeof(title), title_utf8, title_utf8_size, NULL, NULL);
+        WideCharToMultiByte(CP_UTF8, 0, title, sizeof(title), title_utf8, title_utf8_size, NULL, NULL);
 		capture->windowName.append(title_utf8);
 
 		char class_name_utf8[1024] = { 0 };
@@ -137,6 +136,16 @@ New(windowHandle).ToLocalChecked());
 		capture->windowClassName.append(class_name_utf8);
                 capture->hwnd = (uint64_t) hWnd;
 
+        HANDLE handle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid);
+        if (handle != NULL) {
+            WCHAR exe_name[1024] = { 0 };
+            char exe_name_utf8[1024] = { 0 };
+            int exe_name_utf8_size = 1024;
+            GetModuleFileNameExW(handle, NULL, exe_name, 1024);
+            CloseHandle(handle);
+            WideCharToMultiByte(CP_UTF8, 0, exe_name, sizeof(exe_name), exe_name_utf8, exe_name_utf8_size, NULL, NULL);
+		    capture->exeFullName.append(exe_name_utf8);
+        }
 		windowList.push_back(capture);
 
 		return TRUE;

@@ -23,9 +23,10 @@ public:
 	std::string type;
 	std::string windowClassName;
 	std::string windowName;
+	std::string exeFullName;
 	bool antiCheat = 0;
 	bool once = 0;
-        uint64_t hwnd = 0;
+    uint64_t hwnd = 0;
 
 	CaptureEntity() {};
 

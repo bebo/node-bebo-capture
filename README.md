@@ -27,15 +27,17 @@ const BeboCapture = require('bebo-capture');
 BeboCapture.getWindowList()
   .then(windowList => console.log(windowList));
 // outputs:
-[{  
-    windowName: 'results.txt - Notepad',
-    windowClassName: 'Notepad',
-    windowHandle: '0x00000000000d0a58'
- }, {
-    windowName: 'Process Explorer - Sysinternals: www.sysinternals.com [ATHENA\\fpn]',
-    windowClassName: 'PROCEXPL',
-    windowHandle: '0x00000000000a07de'
-]
+[{ 
+    windowName: 'OpenProcess function (Windows) - Google Chrome',
+    windowClassName: 'Chrome_WidgetWin_1',
+    windowHandle: '0x00000000000f00aa',
+    exeFullName: 'C:\\Users\\fpn\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe'
+  }, {
+    windowName: 'Slack - monkey inferno',
+    windowClassName: 'Chrome_WidgetWin_1',
+    windowHandle: '0x00000000000900ce',
+    exeFullName: 'C:\\Users\\fpn\\AppData\\Local\\slack\\app-2.6.3\\slack.exe'
+}]
 ```
 
 ## BeboCapture.setCapture()
