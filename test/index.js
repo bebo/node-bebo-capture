@@ -59,14 +59,41 @@ describe('bebo capture extension', function() {
         throw err;
       });
   });
-  it('setCapture window and verify', function () {
+  it('setCapture window once and verify', function () {
+    let testValues = {
+      id: "gdi",
+      type: "gdi",
+      label: "Slack - monkey inferno",
+      windowName: "Slack - monkey inferno",
+      windowClassName: "Chrome_WidgetWin_1",
+      windowHandle: "0x00000000000900ce",
+      exeFullName: "C:\\Users\\fpn\\AppData\\Local\\slack\\app-2.6.3\\slack.exe",
+      once: true
+    };
+    let expected = Object.assign({}, emptyValues, testValues);
+    return BeboCapture.setCapture(testValues)
+      .then(function (result) {
+        assert.deepEqual(result, expected);
+      }).then(function verify() {
+        return BeboCapture.getCapture();
+      }).then(function (verifyData) {
+        assert(verifyData != null, "capture settings should exist");
+        assert.deepEqual(verifyData, expected);
+      }).catch(function(err) {
+        console.log(err);
+        throw err;
+      });
+  });
+  it('setCapture window forever and verify', function () {
     let testValues = {
       id: "gdi",
       type: "gdi",
       label: "My Favorite window",
       windowHandle: "0xdeadbeefdeadbeef",
       windowClassName: "TankWindow",
-      windowName: "Overwatch"
+      windowName: "Overwatch",
+      exeFullName: "C:\\Program Files(x86)\\whatever\\overwatch.exe",
+      once: false
     };
     let expected = Object.assign({}, emptyValues, testValues);
     return BeboCapture.setCapture(testValues)

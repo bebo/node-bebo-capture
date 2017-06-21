@@ -7,27 +7,27 @@
       "link_settings": {
         "libraries": [ "d3d11.lib", "Psapi.lib" ]
       },
-      "target_defaults": {
-        "configurations": {
-          "Debug": {
-            "defines": [ "DEBUG", "_DEBUG" ],
-            "msvs_settings": {
-              "VCCLCompilerTool": {
-                "RuntimeLibrary": 3,
-                "ExceptionHandling": 1,
-                "AdditionalOptions": [ "/EHsc" ]
-              }
-            }
-          },
-          "Release": {
-            "VCCLCompilerTool": {
-              "RuntimeLibrary": 2,
-              "ExceptionHandling": 1,
-              "AdditionalOptions": [ "/EHsc" ]
-            }
+    }
+  ],
+  "target_defaults": {
+    "configurations": {
+      "Debug": {
+        "defines": [ "DEBUG", "_DEBUG" ],
+        "msvs_settings": {
+          "VCCLCompilerTool": {
+            "RuntimeLibrary": 3,
+            "ExceptionHandling": 1,
+            "AdditionalOptions": [ "/EHsc" ]
           }
+        }
+      },
+      "Release": {
+        "VCCLCompilerTool": {
+          "RuntimeLibrary": 2,
+          "ExceptionHandling": 1,
+          "AdditionalOptions": [ "/EHsc" ]
         }
       }
     }
-  ]
+  }
 }

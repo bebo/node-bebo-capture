@@ -64,12 +64,17 @@ public:
 		Set(obj, New("windowName").ToLocalChecked(), New(capture->windowName).ToLocalChecked());
 		Set(obj, New("windowClassName").ToLocalChecked(), New(capture->windowClassName).ToLocalChecked());
 		Set(obj, New("antiCheat").ToLocalChecked(), New(capture->antiCheat));
+
+        if (capture->type == "gdi") {
+            Set(obj, New("once").ToLocalChecked(), New(capture->once));
+            if (capture->hwnd != 0) {
+                char windowHandle[20] = {0};
+                std::sprintf(windowHandle, "0x%016" PRIx64, capture->hwnd);
+                Set(obj, New("windowHandle").ToLocalChecked(), New(windowHandle).ToLocalChecked());
+            }
+		    Set(obj, New("exeFullName").ToLocalChecked(), New(capture->exeFullName).ToLocalChecked());
+        }
                 
-                if (capture->hwnd != 0) {
-		    char windowHandle[20] = {0};
-	            std::sprintf(windowHandle, "0x%016" PRIx64, capture->hwnd);
-		    Set(obj, New("windowHandle").ToLocalChecked(), New(windowHandle).ToLocalChecked());
-                }
 
 		Local<Value> argv[] = {
 			Null()
@@ -147,11 +152,12 @@ protected:
 			capture->type.assign("inject");
 		}
 		if (!chkGetSZ(hkey, "CaptureLabel", capture->label)) return;
-
 		if (!chkGetSZ(hkey, "CaptureWindowName", capture->windowName)) return;
 		if (!chkGetSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
-        if (!chkGetBool(hkey, "CaptureAntiCheat", &capture->antiCheat)) return;
+		if (!chkGetSZ(hkey, "CaptureExeFullName", capture->exeFullName)) return;
         if (!chkGetQWord(hkey, "CaptureWindowHandle", &capture->hwnd)) return;
+        if (!chkGetBool(hkey, "CaptureAntiCheat", &capture->antiCheat)) return;
+        if (!chkGetBool(hkey, "CaptureOnce", &capture->once)) return;
 
 	}
 };
@@ -179,11 +185,12 @@ public:
 		if (!chkPutSZ(hkey, "CaptureId", capture->id)) return;
 		if (!chkPutSZ(hkey, "CaptureType", capture->type)) return;
 		if (!chkPutSZ(hkey, "CaptureLabel", capture->label)) return;
-
 		if (!chkPutSZ(hkey, "CaptureWindowName", capture->windowName)) return;
 		if (!chkPutSZ(hkey, "CaptureWindowClassName", capture->windowClassName)) return;
-		if (!chkPutBool(hkey, "CaptureAntiCheat", capture->antiCheat)) return;
+		if (!chkPutSZ(hkey, "CaptureExeFullName", capture->exeFullName)) return;
         if (!chkPutQWord(hkey, "CaptureWindowHandle", capture->hwnd)) return;
+		if (!chkPutBool(hkey, "CaptureAntiCheat", capture->antiCheat)) return;
+		if (!chkPutBool(hkey, "CaptureOnce", capture->once)) return;
 		delete(capture);
 		readData(hkey);
 		chk(RegClose(hkey), "Can't close registry");
@@ -216,13 +223,9 @@ NAN_METHOD(setCapture) {
 	capture->windowName = cpStringArg(info, 3);
 	capture->windowClassName = cpStringArg(info, 4);
 
-	Nan::Maybe<bool> antiCheat = Nan::To<bool>(info[5]);
-	if (!info[5].IsEmpty()) {
-		capture->antiCheat = antiCheat.ToChecked();
-	}
 
-    if (!info[6].IsEmpty()) {
-        Nan::Utf8String nan_string(info[6]);
+    if (!info[5].IsEmpty()) {
+        Nan::Utf8String nan_string(info[5]);
         std::string hwnd(*nan_string);
         if (hwnd.size() > 0) {
             try {
@@ -234,6 +237,18 @@ NAN_METHOD(setCapture) {
         }
 	}
 
-	Callback *callback = new Callback(info[7].As<Function>());
+	capture->exeFullName = cpStringArg(info, 6);
+    std::cout << "exeFullName" << capture->exeFullName << std::endl;
+
+	Nan::Maybe<bool> antiCheat = Nan::To<bool>(info[7]);
+	if (!info[7].IsEmpty()) {
+		capture->antiCheat = antiCheat.ToChecked();
+	}
+	Nan::Maybe<bool> once = Nan::To<bool>(info[8]);
+	if (!info[8].IsEmpty()) {
+		capture->once = once.ToChecked();
+	}
+
+	Callback *callback = new Callback(info[9].As<Function>());
 	AsyncQueueWorker(new SetCaptureWorker(capture, callback));
 }

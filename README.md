@@ -67,6 +67,22 @@ BeboCapture.setCapture(options)
   .then(() => console.log("capturing Overwatch"));
 ```
 
+### Capture window using GDI
+```JavaScript
+let options = {
+  type: "gdi",
+  label: "My Favorite window",
+  windowHandle: "0xdeadbeefdeadbeef",
+  windowClassName: "TankWindow",
+  windowName: "Overwatch",
+  exeFullName: "C:\\Program Files(x86)\\whatever\\overwatch.exe",
+  once: false
+};
+
+BeboCapture.setCapture(options)
+  .then(() => console.log("capturing Overwatch"));
+```
+
 ## BeboCapture.getCapture()
 
 What does Bebo Capture API think it is doing?
