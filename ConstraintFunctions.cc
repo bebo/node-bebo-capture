@@ -166,13 +166,13 @@ class SetConstraintWorker : public GetConstraintWorker
 	}
 };
 
-NAN_METHOD(getConstraint)
+NAN_METHOD(getConstraints)
 {
 	Callback *callback = new Callback(info[0].As<Function>());
 	AsyncQueueWorker(new GetConstraintWorker(callback));
 }
 
-NAN_METHOD(setConstraint)
+NAN_METHOD(setConstraints)
 {
 	auto constraint = new ConstraintEntity();
 	Nan::Maybe<uint32_t> width = Nan::To<uint32_t>(info[0]);

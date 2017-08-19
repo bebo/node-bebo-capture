@@ -14,7 +14,7 @@ BeboCapture.getCapture = promisify(Native.getCapture);
 BeboCapture.getDesktops = promisify(Native.getDesktops);
 BeboCapture.getDesktopList = promisify(Native.getDesktops);
 BeboCapture.getWindowList = promisify(Native.getWindowList);
-BeboCapture.getConstraint = promisify(Native.getConstraint);
+BeboCapture.getConstraints = promisify(Native.getConstraints);
 
 var setCapture = promisify(Native.setCapture);
 BeboCapture.setCapture = (options) => {
@@ -33,8 +33,8 @@ BeboCapture.setCapture = (options) => {
     options.once || false);
 }
 
-var setConstraint = promisify(Native.setConstraint);
-BeboCapture.setConstraint = (options) => {
+var setConstraints = promisify(Native.setConstraints);
+BeboCapture.setConstraints = (options) => {
   if (!typeof (options) === 'object') {
     return new Promise((_, reject) => { reject("invalid object") });
   }
@@ -55,7 +55,7 @@ BeboCapture.setConstraint = (options) => {
     return Promise.reject("invalid params value: width, height, fps need to be non negative");
   }
 
-  return setConstraint(
+  return setConstraints(
     options.width || 0,
     options.height || 0,
     options.fps || 0);

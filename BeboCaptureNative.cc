@@ -11,10 +11,10 @@ NAN_MODULE_INIT(InitAll)
            Nan::GetFunction(Nan::New<FunctionTemplate>(getCapture)).ToLocalChecked());
   Nan::Set(target, Nan::New("setCapture").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(setCapture)).ToLocalChecked());
-  Nan::Set(target, Nan::New("getConstraint").ToLocalChecked(),
-           Nan::GetFunction(Nan::New<FunctionTemplate>(getConstraint)).ToLocalChecked());
-  Nan::Set(target, Nan::New("setConstraint").ToLocalChecked(),
-           Nan::GetFunction(Nan::New<FunctionTemplate>(setConstraint)).ToLocalChecked());
+  Nan::Set(target, Nan::New("getConstraints").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(getConstraints)).ToLocalChecked());
+  Nan::Set(target, Nan::New("setConstraints").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(setConstraints)).ToLocalChecked());
   Nan::Set(target, Nan::New("getDesktops").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(getDesktops)).ToLocalChecked());
   Nan::Set(target, Nan::New("getWindowList").ToLocalChecked(),

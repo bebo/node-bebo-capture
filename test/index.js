@@ -164,7 +164,7 @@ describe('bebo capture extension', function () {
       height: 720,
       fps: 30
     };
-    return BeboCapture.setConstraint(testValues)
+    return BeboCapture.setConstraints(testValues)
       .then(function (result) {
         assert.deepEqual(result, testValues);
       }).catch(function (err) {

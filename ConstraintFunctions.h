@@ -1,8 +1,8 @@
 #pragma once
 
 #include "nan.h"
-NAN_METHOD(getConstraint);
-NAN_METHOD(setConstraint);
+NAN_METHOD(getConstraints);
+NAN_METHOD(setConstraints);
 
 class ConstraintEntity
 {
