@@ -279,15 +279,21 @@ HRESULT putBool(HKEY hkey, char *key, bool val)
 
 const char *errno_to_text(HRESULT errorNumber)
 {
-	const char *errorMessage;
-	DWORD nLen = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+	const wchar_t *errorMessage;
+	DWORD nLen = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
 							   NULL,
 							   errorNumber,
 							   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 							   (LPTSTR)&errorMessage,
 							   0,
 							   NULL);
-	return errorMessage;
+        if (nLen == 0) return "Unknown Error. ";
+
+        char *buffer;
+        size_t size;
+        wcstombs_s(&size, buffer, 512, errorMessage, 512);
+
+	return buffer;
 }
 
 bool WinAsyncWorker::chk(HRESULT hresult, std::string &msg)
@@ -295,10 +301,13 @@ bool WinAsyncWorker::chk(HRESULT hresult, std::string &msg)
 	std::string mymsg(msg);
 	if (hresult != NOERROR)
 	{
-		mymsg.append(errno_to_text(hresult));
-		SetErrorMessage(mymsg.c_str());
-		return false;
-	}
+          char buffer[512];
+          sprintf_s(buffer, 512, "%s(0x%08x)", errno_to_text(hresult), hresult);
+          mymsg.append(buffer);
+
+          SetErrorMessage(mymsg.c_str());
+          return false;
+        }
 	return true;
 }
 
