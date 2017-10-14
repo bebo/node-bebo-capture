@@ -15,6 +15,7 @@ BeboCapture.getDesktops = promisify(Native.getDesktops);
 BeboCapture.getDesktopList = promisify(Native.getDesktops);
 BeboCapture.getWindowList = promisify(Native.getWindowList);
 BeboCapture.getConstraints = promisify(Native.getConstraints);
+BeboCapture.signalCaptureReadRegistry = promisify(Native.signalCaptureReadRegistry);
 
 var setCapture = promisify(Native.setCapture);
 BeboCapture.setCapture = (options) => {

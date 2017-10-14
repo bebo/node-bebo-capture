@@ -11,6 +11,8 @@ NAN_MODULE_INIT(InitAll)
            Nan::GetFunction(Nan::New<FunctionTemplate>(getCapture)).ToLocalChecked());
   Nan::Set(target, Nan::New("setCapture").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(setCapture)).ToLocalChecked());
+  Nan::Set(target, Nan::New("signalCaptureReadRegistry").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(signalCaptureReadRegistry)).ToLocalChecked());
   Nan::Set(target, Nan::New("getConstraints").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(getConstraints)).ToLocalChecked());
   Nan::Set(target, Nan::New("setConstraints").ToLocalChecked(),

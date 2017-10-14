@@ -172,4 +172,14 @@ describe('bebo capture extension', function () {
         throw err;
       });
   });
+
+  it('signalCaptureReadRegistry', () => {
+    return BeboCapture.signalCaptureReadRegistry()
+      .then((result) => {
+        console.log('SUCCEED: ', result);
+      })
+      .catch((result) => {
+        console.log('FAILED: ', result);
+      });
+  });
 });
