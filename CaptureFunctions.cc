@@ -201,6 +201,10 @@ class SetCaptureWorker: public GetCaptureWorker {
 };
 
 class SignalCaptureWorker: public WinAsyncWorker {
+  protected:
+    bool ok;
+    std::string message = "";
+
   public:
     SignalCaptureWorker(Callback *callback)
       : WinAsyncWorker(callback){};
@@ -222,9 +226,11 @@ class SignalCaptureWorker: public WinAsyncWorker {
       std::cout << "handle: " << event << std::endl;
 
       if (event == NULL) {
-        SetErrorMessage("Event not found, is bebo capture running?");
+        ok = false;
+        message = "signal event cannot be opened";
         return;
       }
+      ok = true;
 
       SetEvent(event);
 
@@ -244,7 +250,8 @@ class SignalCaptureWorker: public WinAsyncWorker {
       HandleScope scope;
 
       Local<Object> obj = Nan::New<Object>();
-      Set(obj, New("ok").ToLocalChecked(), New(true));
+      Set(obj, New("ok").ToLocalChecked(), New(ok));
+      Set(obj, New("message").ToLocalChecked(), New(message).ToLocalChecked());
 
       Local<Value> argv[] = {
         Null()
