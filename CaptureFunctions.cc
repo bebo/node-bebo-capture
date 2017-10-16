@@ -234,10 +234,17 @@ class SignalCaptureWorker: public WinAsyncWorker {
 
       SetEvent(event);
 
+      int sleep_count = 0;
       while (true) {
         DWORD result = WaitForSingleObject(event, 1);
+        if (sleep_count > 500) { // rougly 1s, 2 -- 1ms wait
+          SetErrorMessage("signalled but timeout for waiting for the respond.");
+          break;
+        }
+
         if (result == WAIT_OBJECT_0) { // still processing;
           Sleep(1);
+          sleep_count++;
           continue;
         }
         break;
