@@ -4,12 +4,16 @@
     "configure": "node-gyp configure",
     "build": "node-gyp build",
     "test": "mocha",
-    "install": "node-gyp rebuild"
+    "install": "napa && node-gyp rebuild"
+  },
+  "napa-config": {
+    "cache": false
   },
   "devDependencies": {
     "bindings": "^1.2.1",
     "mocha": "^3.4.2",
     "nan": "^2.0.5",
+    "napa": "^3.0.0",
     "node-gyp": "^3.6.2"
   },
   "dependencies": {
@@ -30,6 +34,9 @@
   "author": "Florian P. Nierhaus",
   "bugs": {
     "url": "https://github.com/bebo/node-bebo-capture/issues"
+  },
+  "napa": {
+    "bebo-capture": "https://s3-us-west-1.amazonaws.com/bebo-app/repo/bebo-capture/win64/win64-v0.12.0.zip"
   },
   "homepage": "https://github.com/bebo/node-bebo-capture#readme"
 }
