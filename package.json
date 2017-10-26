@@ -36,7 +36,7 @@
     "url": "https://github.com/bebo/node-bebo-capture/issues"
   },
   "napa": {
-    "bebo-capture": "https://s3-us-west-1.amazonaws.com/bebo-app/repo/bebo-capture/win64/win64-v0.13.1.zip"
+    "bebo-capture": "https://s3-us-west-1.amazonaws.com/bebo-app/repo/bebo-capture/win64/win64-v0.13.2.zip"
   },
   "homepage": "https://github.com/bebo/node-bebo-capture#readme"
 }
