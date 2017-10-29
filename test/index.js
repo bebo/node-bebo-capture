@@ -146,12 +146,10 @@ describe('bebo capture extension', function () {
       .then(function (data) {
         console.log("windows", data);
         assert(Array.isArray(data), "expect array");
-        /*
-          assert(data.length > 0, "expect one or more desktops");
-          assert(data[0].type === 'desktop', "expect capture type desktop");
-          assert(data[0].id === 'desktop:0:0', "capture id should be desktop:0:0");
-          assert(data[0].label === 'Screen 1', "capture label should be Screen 1");
-          */
+//    assert(data.length > 0, "expect one or more desktops");
+//         assert(data[0].type === 'desktop', "expect capture type desktop");
+//         assert(data[0].id === 'desktop:0:0', "capture id should be desktop:0:0");
+//         assert(data[0].label === 'Screen 1', "capture label should be Screen 1");
       }).catch(function (err) {
         console.log(err);
         throw err;
@@ -182,4 +180,15 @@ describe('bebo capture extension', function () {
         console.log('FAILED: ', result);
       });
   });
+
+  it('getForegroundWindow', () => {
+    return BeboCapture.getForegroundWindow()
+        .then((result) => {
+          console.log('SUCCEED: ', result);
+        })
+        .catch((result) => {
+          console.log('FAILED: ', result);
+        });
+  });
+
 });

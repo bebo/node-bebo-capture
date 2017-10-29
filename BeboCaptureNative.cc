@@ -21,6 +21,8 @@ NAN_MODULE_INIT(InitAll)
            Nan::GetFunction(Nan::New<FunctionTemplate>(getDesktops)).ToLocalChecked());
   Nan::Set(target, Nan::New("getWindowList").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(getWindowList)).ToLocalChecked());
+  Nan::Set(target, Nan::New("getForegroundWindow").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(getForegroundWindow)).ToLocalChecked());
 }
 
 NODE_MODULE(NativeExtension, InitAll)

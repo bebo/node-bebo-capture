@@ -3,3 +3,4 @@
 #include <nan.h>
 
 NAN_METHOD(getWindowList);
+NAN_METHOD(getForegroundWindow);
