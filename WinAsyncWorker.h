@@ -6,33 +6,33 @@
 class WinAsyncWorker : public Nan::AsyncWorker
 {
   public:
-	WinAsyncWorker(Nan::Callback *callback) : Nan::AsyncWorker(callback){};
-	~WinAsyncWorker(){};
+    WinAsyncWorker(Nan::Callback *callback) : Nan::AsyncWorker(callback){};
+    ~WinAsyncWorker(){};
 
   protected:
-	bool chk(HRESULT hresult, std::string &msg);
-	bool chk(HRESULT hresult, const char *msg);
+    bool chk(HRESULT hresult, std::string &msg);
+    bool chk(HRESULT hresult, const char *msg);
 };
 
 class CaptureEntity
 {
 
   public:
-	std::string id;
-	std::string label;
-	std::string type;
-	std::string windowClassName;
-	std::string windowName;
-	std::string exeFullName;
-	bool antiCheat = 0;
-	bool once = 0;
-	uint64_t hwnd = 0;
+    std::string id;
+    std::string label;
+    std::string type;
+    std::string windowClassName;
+    std::string windowName;
+    std::string exeFullName;
+    bool antiCheat = 0;
+    bool once = 0;
+    uint64_t hwnd = 0;
 
-	CaptureEntity(){};
+    CaptureEntity(){};
 
-	~CaptureEntity()
-	{
-	}
+    ~CaptureEntity()
+    {
+    }
 };
 
 HRESULT RegOpen(REGSAM samDesired, HKEY *hkey);

@@ -2,6 +2,7 @@
 #include "ConstraintFunctions.h"
 #include "DesktopListFunctions.h"
 #include "WindowListFunctions.h"
+#include "ProcessFunctions.h"
 
 using v8::FunctionTemplate;
 
@@ -23,6 +24,13 @@ NAN_MODULE_INIT(InitAll)
            Nan::GetFunction(Nan::New<FunctionTemplate>(getWindowList)).ToLocalChecked());
   Nan::Set(target, Nan::New("getForegroundWindow").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(getForegroundWindow)).ToLocalChecked());
+
+  Nan::Set(target, Nan::New("checkProcess").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(checkProcess)).ToLocalChecked());
+  Nan::Set(target, Nan::New("restartProcessAsElevated").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(restartProcessAsElevated)).ToLocalChecked());
+  Nan::Set(target, Nan::New("isProcessElevated").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(isProcessElevated)).ToLocalChecked());
 }
 
 NODE_MODULE(NativeExtension, InitAll)

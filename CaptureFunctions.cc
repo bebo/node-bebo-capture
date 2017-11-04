@@ -267,9 +267,7 @@ class SignalCaptureWorker: public WinAsyncWorker {
 
       callback->Call(2, argv);
     }
-
 };
-
 
 NAN_METHOD(getCapture) {
   Callback *callback = new Callback(info[0].As<Function>());

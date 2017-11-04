@@ -181,6 +181,28 @@ describe('bebo capture extension', function () {
       });
   });
 
+  it('checkProcess', () => {
+    return BeboCapture.checkProcess({
+      windowClassName:"UnrealWindow"
+    })
+      .then((result) => {
+        console.log('SUCCEED: ', result);
+      })
+      .catch((result) => {
+        console.log('FAILED: ', result);
+      });
+  });
+
+  it('isProcessElevated', () => {
+    return BeboCapture.isProcessElevated()
+      .then((result) => {
+        console.log('SUCCEED: ', result);
+      })
+      .catch((result) => {
+        console.log('FAILED: ', result);
+      });
+  });
+
   it('getForegroundWindow', () => {
     return BeboCapture.getForegroundWindow()
         .then((result) => {
