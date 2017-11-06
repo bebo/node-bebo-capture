@@ -27,6 +27,47 @@ using Nan::To;
 
 #define EVENT_READ_REGISTRY "Global\\BEBO_CAPTURE_READ_REGISTRY"
 
+void signalRegistryChangeEvent(bool &ok, std::string &message) {
+  HANDLE event;
+
+  event = OpenEvent(
+      EVENT_ALL_ACCESS,            // request full access
+      FALSE,                       // handle not inheritable
+      TEXT(EVENT_READ_REGISTRY));  // object name
+
+  if (event == NULL) {
+    // cause we don't actually want to promise.reject here
+    // before web does set capture event before opening the bebo-game-capture camera
+    ok = true;
+    message = "signal event cannot be opened";
+    return;
+  }
+
+  ok = true;
+
+  SetEvent(event);
+
+  int sleep_count = 0;
+  while (true) {
+    DWORD result = WaitForSingleObject(event, 1);
+    if (sleep_count > 500) { // rougly 1s, 2 -- 1ms wait
+      ok = false;
+      message = "signalled but timeout for waiting for the respond.";
+      break;
+    }
+
+    if (result == WAIT_OBJECT_0) { // still processing;
+      Sleep(1);
+      sleep_count++;
+      continue;
+    }
+
+    break;
+  }
+
+  CloseHandle(event);
+  return;
+}
 
 class GetCaptureWorker: public WinAsyncWorker {
 
@@ -50,6 +91,13 @@ class GetCaptureWorker: public WinAsyncWorker {
       }
       this->readData(hkey);
       chk(RegClose(hkey), "Can't close registry");
+
+      bool ok;
+      std::string message;
+      signalRegistryChangeEvent(ok, message);
+      if (!ok) {
+        SetErrorMessage(message.c_str());
+      }
     }
 
 
@@ -193,9 +241,17 @@ class SetCaptureWorker: public GetCaptureWorker {
       if (!chkPutQWord(hkey, "CaptureWindowHandle", capture->hwnd)) return;
       if (!chkPutBool(hkey, "CaptureAntiCheat", capture->antiCheat)) return;
       if (!chkPutBool(hkey, "CaptureOnce", capture->once)) return;
-      delete(capture);
+      delete capture;
+
       readData(hkey);
       chk(RegClose(hkey), "Can't close registry");
+
+      bool ok;
+      std::string message;
+      signalRegistryChangeEvent(ok, message);
+      if (!ok) {
+        SetErrorMessage(message.c_str());
+      }
     }
 
 };
@@ -216,41 +272,10 @@ class SignalCaptureWorker: public WinAsyncWorker {
     // here, so everything we need for input and output
     // should go on `this`.
     void Execute() {
-      HANDLE event;
-
-      event = OpenEvent(
-          EVENT_ALL_ACCESS,            // request full access
-          FALSE,                       // handle not inheritable
-          TEXT(EVENT_READ_REGISTRY));  // object name
-
-      std::cout << "handle: " << event << std::endl;
-
-      if (event == NULL) {
-        ok = false;
-        message = "signal event cannot be opened";
-        return;
+      signalRegistryChangeEvent(ok, message);
+      if (!ok) {
+        SetErrorMessage(message.c_str());
       }
-      ok = true;
-
-      SetEvent(event);
-
-      int sleep_count = 0;
-      while (true) {
-        DWORD result = WaitForSingleObject(event, 1);
-        if (sleep_count > 500) { // rougly 1s, 2 -- 1ms wait
-          SetErrorMessage("signalled but timeout for waiting for the respond.");
-          break;
-        }
-
-        if (result == WAIT_OBJECT_0) { // still processing;
-          Sleep(1);
-          sleep_count++;
-          continue;
-        }
-        break;
-      }
-
-      CloseHandle(event);
     }
 
     void HandleOKCallback() {

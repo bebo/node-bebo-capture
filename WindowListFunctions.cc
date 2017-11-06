@@ -136,7 +136,7 @@ class GetWindowListWorker: public WinAsyncWorker {
       capture->windowClassName.append(class_name_utf8);
       capture->hwnd = (uint64_t) hWnd;
 
-      HANDLE handle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid);
+      HANDLE handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, false, pid);
       if (handle != NULL) {
         WCHAR exe_name[1024] = { 0 };
         char exe_name_utf8[1024] = { 0 };
