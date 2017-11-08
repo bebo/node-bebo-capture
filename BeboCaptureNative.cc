@@ -25,10 +25,8 @@ NAN_MODULE_INIT(InitAll)
   Nan::Set(target, Nan::New("getForegroundWindow").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(getForegroundWindow)).ToLocalChecked());
 
-  Nan::Set(target, Nan::New("checkProcess").ToLocalChecked(),
-           Nan::GetFunction(Nan::New<FunctionTemplate>(checkProcess)).ToLocalChecked());
-  Nan::Set(target, Nan::New("restartProcessAsElevated").ToLocalChecked(),
-           Nan::GetFunction(Nan::New<FunctionTemplate>(restartProcessAsElevated)).ToLocalChecked());
+  Nan::Set(target, Nan::New("checkProcessElevation").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(checkProcessElevation)).ToLocalChecked());
   Nan::Set(target, Nan::New("isProcessElevated").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(isProcessElevated)).ToLocalChecked());
 }

@@ -27,69 +27,6 @@ using Nan::To;
 
 #define EVENT_READ_REGISTRY "Global\\BEBO_CAPTURE_READ_REGISTRY"
 
-class RestartAsAdminWorker: public WinAsyncWorker {
-  protected:
-    bool ok = true;
-    std::string message = "";
-
-  public:
-    RestartAsAdminWorker(Callback *callback)
-      : WinAsyncWorker(callback){};
-    ~RestartAsAdminWorker() {
-    };
-
-    // Executed inside the worker-thread.
-    // It is not safe to access V8, or V8 data structures
-    // here, so everything we need for input and output
-    // should go on `this`.
-    void Execute() {
-      wchar_t szPath[MAX_PATH];
-
-      HWND hwnd = GetActiveWindow();
-
-      if (GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath))) {
-        // Launch itself as administrator. 
-        SHELLEXECUTEINFO sei = { sizeof(sei) };
-        sei.lpVerb = L"runas";
-        sei.lpFile = szPath;
-        sei.hwnd = hwnd;
-        sei.nShow = SW_NORMAL;
-
-        if (!ShellExecuteEx(&sei)) {
-          DWORD dwError = GetLastError();
-          if (dwError == ERROR_CANCELLED) {
-            ok = false;
-            message = "user refused the elevation";
-          } else {
-            ok = false;
-            message = "unexpected error";
-          }
-        } else {
-          ok = true;
-        }
-      }
-    }
-
-    void HandleOKCallback() {
-      HandleScope scope;
-
-      Local<Object> obj = Nan::New<Object>();
-      Set(obj, New("ok").ToLocalChecked(), New(ok));
-      Set(obj, New("message").ToLocalChecked(), New(message).ToLocalChecked());
-
-      Local<Value> argv[] = {
-        Null()
-          , obj
-      };
-
-      callback->Call(2, argv);
-
-      if (ok) {
-        exit(0);
-      }
-    }
-};
-
 class CheckProcessWorker: public WinAsyncWorker {
   protected:
     bool ok = true;
@@ -245,7 +182,7 @@ bool isKeyExists(v8::Local<v8::Object> options, std::string key) {
   return Nan::Has(options, v8str).FromJust();
 }
 
-NAN_METHOD(checkProcess) {
+NAN_METHOD(checkProcessElevation) {
   Local<Object> object = info[0].As<Object>();
   Callback *callback = new Callback(info[1].As<Function>());
   CaptureEntity *entity = new CaptureEntity;
@@ -285,11 +222,6 @@ NAN_METHOD(checkProcess) {
   }
 
   AsyncQueueWorker(new CheckProcessWorker(entity, callback));
-}
-
-NAN_METHOD(restartProcessAsElevated) {
-  Callback *callback = new Callback(info[0].As<Function>());
-  AsyncQueueWorker(new RestartAsAdminWorker(callback));
 }
 
 NAN_METHOD(isProcessElevated) {

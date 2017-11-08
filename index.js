@@ -18,9 +18,8 @@ BeboCapture.getConstraints = promisify(Native.getConstraints);
 BeboCapture.signalCaptureReadRegistry = promisify(Native.signalCaptureReadRegistry);
 BeboCapture.getForegroundWindow = promisify(Native.getForegroundWindow);
 
-BeboCapture.restartProcessAsElevated = promisify(Native.restartProcessAsElevated);
 BeboCapture.isProcessElevated = promisify(Native.isProcessElevated);
-BeboCapture.checkProcess = promisify(Native.checkProcess);
+BeboCapture.checkProcessElevation = promisify(Native.checkProcessElevation);
 
 var setCapture = promisify(Native.setCapture);
 BeboCapture.setCapture = (options) => {

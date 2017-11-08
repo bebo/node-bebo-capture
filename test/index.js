@@ -181,8 +181,8 @@ describe('bebo capture extension', function () {
       });
   });
 
-  it('checkProcess', () => {
-    return BeboCapture.checkProcess({
+  it('checkProcessElevation', () => {
+    return BeboCapture.checkProcessElevation({
       windowClassName:"UnrealWindow"
     })
       .then((result) => {
