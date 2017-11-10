@@ -94,7 +94,7 @@ class CheckProcessWorker: public WinAsyncWorker {
 
       Local<Object> obj = Nan::New<Object>();
       Set(obj, New("ok").ToLocalChecked(), New(ok));
-      // Set(obj, New("error").ToLocalChecked(), New(static_cast<uint32_t>(errorCode)));
+      Set(obj, New("win_error").ToLocalChecked(), New(static_cast<uint32_t>(errorCode)));
       Set(obj, New("require_admin").ToLocalChecked(), New(requireAdmin));
       Set(obj, New("message").ToLocalChecked(), New(message).ToLocalChecked());
 
