@@ -29,7 +29,7 @@ BeboCapture.setCapture = (options) => {
   return setCapture(
     options.type || "",
     options.id || "",
-    options.label || "",
+    options.name || options.label || "",
     options.windowName || "",
     options.windowClassName || "",
     options.windowHandle || "",
