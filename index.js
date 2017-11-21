@@ -32,7 +32,7 @@ BeboCapture.setCapture = (options) => {
     options.name || options.label || "",
     options.windowName || "",
     options.windowClassName || "",
-    options.windowHandle || "",
+    options.windowHandle || "0",
     options.exeFullName || "",
     options.antiCheat || false,
     options.once || false);
