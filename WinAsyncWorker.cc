@@ -289,7 +289,7 @@ const char *errno_to_text(HRESULT errorNumber)
 							   NULL);
         if (nLen == 0) return "Unknown Error. ";
 
-        char *buffer;
+        char* buffer = NULL;
         size_t size;
         wcstombs_s(&size, buffer, 512, errorMessage, 512);
 

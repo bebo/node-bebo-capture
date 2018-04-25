@@ -1,6 +1,7 @@
 #include "WinAsyncWorker.h"
 #include "DesktopListFunctions.h"
 
+#include <algorithm>
 #include <windows.h>
 #include <Psapi.h>
 #include <iostream>
@@ -9,7 +10,6 @@
 #include <D3DCommon.h>
 #include <D3D11.h>
 #include <list>
-#include "WinAsyncWorker.h"
 #include <functional>
 #include <string>
 #include <cstdint>
@@ -31,6 +31,8 @@ using Nan::New;
 using Nan::Set;
 using Nan::Null;
 using Nan::To;
+
+BOOL CALLBACK EnumerationCallbackWrapper(HWND hWnd, LPARAM lParam);
 
 // http://stackoverflow.com/questions/7277366/why-does-enumwindows-return-more-windows-than-i-expected
 BOOL IsAltTabWindow(HWND hwnd)
@@ -65,8 +67,41 @@ BOOL IsAltTabWindow(HWND hwnd)
   return TRUE;
 }
 
+BOOL IsWindowBlacklisted(CaptureEntity* capture) {
+  if (capture->windowClassName.empty()) {
+    return TRUE;
+  }
 
-BOOL CALLBACK EnumerationCallbackWrapper(HWND hWnd, LPARAM lParam);
+  if (capture->windowName.empty()) {
+    return TRUE;
+  }
+
+  if (capture->windowClassName.compare("Progman") == 0 ||
+      capture->windowClassName.compare("Button") == 0) {
+    return TRUE;
+  }
+
+  // Windows 8 introduced a "Modern App" identified by their class name being
+  // either ApplicationFrameWindow or windows.UI.Core.coreWindow. The
+  // associated windows cannot be captured, so we skip them.
+  // http://crbug.com/526883.
+  if (capture->windowClassName.compare("ApplicationFrameWindow") == 0 ||
+      capture->windowClassName.compare("Windows.UI.Core.CoreWindow") == 0) {
+    return TRUE;
+  }
+
+  if (capture->windowName.compare("Bebo All-In-One Streaming") == 0 &&
+      capture->windowClassName.compare("Chrome_WidgetWin_1") == 0) {
+    return TRUE;
+  }
+
+
+  return FALSE;
+}
+
+bool WindowListComparator(CaptureEntity* left, CaptureEntity* right) {
+  return left->windowName.compare(right->windowName) < 0;
+}
 
 class GetWindowListWorker: public WinAsyncWorker {
 
@@ -83,6 +118,7 @@ class GetWindowListWorker: public WinAsyncWorker {
     // should go on `this`.
     void Execute() {
       EnumWindows(EnumerationCallbackWrapper, (LPARAM) this);
+      windowList.sort(WindowListComparator);
     }
 
     // Executed when the async work is complete
@@ -119,6 +155,7 @@ class GetWindowListWorker: public WinAsyncWorker {
       if (!IsAltTabWindow(hWnd)) {
         return TRUE;
       }
+
       CaptureEntity *capture = new CaptureEntity();
 
       GetWindowTextW(hWnd, title, 1024);
@@ -146,7 +183,9 @@ class GetWindowListWorker: public WinAsyncWorker {
         WideCharToMultiByte(CP_UTF8, 0, exe_name, sizeof(exe_name), exe_name_utf8, exe_name_utf8_size, NULL, NULL);
         capture->exeFullName.append(exe_name_utf8);
       }
-      windowList.push_back(capture);
+
+      if (!IsWindowBlacklisted(capture))
+        windowList.push_back(capture);
 
       return TRUE;
     }
